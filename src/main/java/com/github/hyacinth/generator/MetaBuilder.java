@@ -231,6 +231,100 @@ public class MetaBuilder {
 		rs.close();
 		stm.close();
 	}
+
+	/**
+	 *
+	 * @param tableMetas
+	 */
+	protected void buildColumnMetasDetail(List<TableMeta> tableMetas) {
+		Connection conn = null;
+		try {
+			conn = dataSource.getConnection();
+			DatabaseMetaData dbMeta = conn.getMetaData();
+			for (TableMeta tableMeta : tableMetas) {
+				// 重建整个 TableMeta.columnMetas
+				// 通过查看 dbMeta.getColumns(...) 源码注释，还可以获取到更多 meta data
+				ResultSet rs = dbMeta.getColumns(conn.getCatalog(), null, tableMeta.name, null);
+				while (rs.next()) {
+					ColumnMeta columnMeta = null;
+					String name = rs.getString("COLUMN_NAME");            // 名称
+					for(ColumnMeta meta : tableMeta.columnMetas){
+						if(!StringTools.isBlank(name) && name.equals(meta.name)){
+							columnMeta = meta;
+						}
+					}
+					if(columnMeta == null){
+						continue;
+					}
+					columnMeta.type = rs.getString("TYPE_NAME");            // 类型
+					if (columnMeta.type == null) {
+						columnMeta.type = "";
+					}
+
+					int columnSize = rs.getInt("COLUMN_SIZE");                // 长度
+					if (columnSize > 0) {
+						columnMeta.type = columnMeta.type + "(" + columnSize;
+						int decimalDigits = rs.getInt("DECIMAL_DIGITS");    // 小数位数
+						if (decimalDigits > 0) {
+							columnMeta.type = columnMeta.type + "," + decimalDigits;
+						}
+						columnMeta.type = columnMeta.type + ")";
+					}
+
+					columnMeta.isNullable = rs.getString("IS_NULLABLE");    // 是否允许 NULL 值
+//					if (columnMeta.isNullable == null) {
+//						columnMeta.isNullable = "";
+//					}
+					if ("YES".equals(columnMeta.isNullable)) {
+						columnMeta.isNullable = "TRUE";
+					} else if ("NO".equals(columnMeta.isNullable)){
+						columnMeta.isNullable = "FALSE";
+					}
+
+					columnMeta.isPrimaryKey = "FALSE";
+					String[] keys = tableMeta.primaryKey.split(",");
+					for (String key : keys) {
+						if (key.equalsIgnoreCase(columnMeta.name)) {
+							columnMeta.isPrimaryKey = "TRUE";
+							break;
+						}
+					}
+
+					columnMeta.defaultValue = rs.getString("COLUMN_DEF");    // 默认值
+					if (columnMeta.defaultValue == null) {
+						columnMeta.defaultValue = "";
+					}
+
+					columnMeta.remarks = rs.getString("REMARKS");            // 备注
+					if (columnMeta.remarks == null) {
+						columnMeta.remarks = "";
+					}
+
+					if (tableMeta.colNameMaxLen < columnMeta.name.length()) {
+						tableMeta.colNameMaxLen = columnMeta.name.length();
+					}
+					if (tableMeta.colTypeMaxLen < columnMeta.type.length()) {
+						tableMeta.colTypeMaxLen = columnMeta.type.length();
+					}
+					if (tableMeta.colDefaultValueMaxLen < columnMeta.defaultValue.length()) {
+						tableMeta.colDefaultValueMaxLen = columnMeta.defaultValue.length();
+					}
+
+				}
+				rs.close();
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	
 	/**
 	 * 构造 colName 所对应的 attrName，mysql 数据库建议使用小写字段名或者驼峰字段名

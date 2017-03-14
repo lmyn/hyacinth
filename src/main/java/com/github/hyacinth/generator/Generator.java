@@ -200,6 +200,7 @@ public class Generator {
 	public void generate() {
 		long start = System.currentTimeMillis();
 		List<TableMeta> tableMetas = metaBuilder.build();
+		metaBuilder.buildColumnMetasDetail(tableMetas);
 		if (tableMetas.size() == 0) {
 			System.out.println("TableMeta 数量为 0，不生成任何文件");
 			return ;
@@ -211,9 +212,9 @@ public class Generator {
 			modelGenerator.generate(tableMetas);
 		}
 		
-		if (mappingKitGenerator != null) {
-			mappingKitGenerator.generate(tableMetas);
-		}
+//		if (mappingKitGenerator != null) {
+//			mappingKitGenerator.generate(tableMetas);
+//		}
 		
 		if (dataDictionaryGenerator != null && generateDataDictionary) {
 			dataDictionaryGenerator.generate(tableMetas);

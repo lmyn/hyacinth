@@ -24,4 +24,7 @@ public @interface Column {
     //列注释
     String comment() default "";
 
+    //默认值
+    String defaultValue();
+
 }
