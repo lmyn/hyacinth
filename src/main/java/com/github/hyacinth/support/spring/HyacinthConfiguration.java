@@ -3,18 +3,13 @@ package com.github.hyacinth.support.spring;
 import com.github.hyacinth.*;
 import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.sql.SqlTemplateFileMonitor;
-import com.github.hyacinth.tools.PathTools;
+import com.github.hyacinth.sql.jetx.JetbrickTemplateRender;
 import com.github.hyacinth.tools.StringTools;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,8 +41,6 @@ public class HyacinthConfiguration {
     private boolean isStarted = false;
 
     private SqlTemplateFileMonitor monitor;
-
-    private List<Table> tableList = new ArrayList<Table>();
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -99,8 +92,9 @@ public class HyacinthConfiguration {
             startHotLoad();
         }
 
-        new TableBuilder().build(basePackage);
+        new TableBuilder().build(basePackage, config);
         DbKit.addConfig(config);
+        DbKit.addRender(new JetbrickTemplateRender());
         isStarted = true;
 
     }

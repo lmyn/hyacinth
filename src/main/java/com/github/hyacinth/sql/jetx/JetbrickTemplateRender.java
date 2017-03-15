@@ -1,5 +1,6 @@
 package com.github.hyacinth.sql.jetx;
 
+import com.github.hyacinth.sql.Render;
 import com.github.hyacinth.sql.SqlParameterizeRender;
 import com.github.hyacinth.sql.SqlCache;
 import jetbrick.template.JetTemplate;
@@ -17,22 +18,23 @@ import java.util.Map;
  * Date: 2016/12/29
  * Time: 22:18
  */
-public class JetxRender {
+public class JetbrickTemplateRender implements Render {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(JetxRender.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(JetbrickTemplateRender.class);
 
     /**
      * 普通SQL
      *
      * @param key    标识
-     * @param params 参数
+     * @param paras 参数
      * @return SqlParams
      */
-    public static String render(String key, Map<String, Object> params, List<Object> paramsList) {
+    @Override
+    public String render(String key, Map<String, Object> paras, List<Object> parasList) {
         //模板引擎渲染
-        StringBuilder sql = new StringBuilder(jetEngineRender(key, params));
+        StringBuilder sql = new StringBuilder(jetEngineRender(key, paras));
         //二次渲染
-        SqlParameterizeRender.render(params, sql, paramsList);
+        SqlParameterizeRender.render(paras, sql, parasList);
 
         return sql.toString();
     }
@@ -41,17 +43,17 @@ public class JetxRender {
      * 引擎渲染
      *
      * @param key    模板标识
-     * @param params 渲染参数
+     * @param paras 渲染参数
      * @return 引擎渲染结果
      */
-    private static String jetEngineRender(String key, Map<String, Object> params) {
+    private String jetEngineRender(String key, Map<String, Object> paras) {
         String result;
         //获取模板缓存
         JetTemplate jetTemplate = SqlCache.templateCache.get(key);
 
         StringWriter stringWriter = new StringWriter();
         if (jetTemplate != null) {
-            jetTemplate.render(params, stringWriter);
+            jetTemplate.render(paras, stringWriter);
         }
         result = stringWriter.toString();
         try {

@@ -3,7 +3,6 @@ package com.github.hyacinth.sql.jetx;
 import com.github.hyacinth.sql.SqlCache;
 import jetbrick.template.JetEngine;
 import jetbrick.template.JetTemplate;
-import jetbrick.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * Date: 2016/7/30
  * Time: 14:39
  */
-public class JetxCompiler {
+public class JetbrickTemplateCompiler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JetxCompiler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JetbrickTemplateCompiler.class);
 
     //模板引擎
     private static JetEngine jetEngine = null;

@@ -30,8 +30,8 @@ public class TableBuilder {
 
     private JavaType javaType = new JavaType();
 
-    public List<com.github.hyacinth.Table> build(String basePackage) throws IOException {
-        return buildTable(getBaseModelClass(basePackage));
+    public void build(String basePackage, Config config) throws IOException {
+        buildTable(getBaseModelClass(basePackage), config);
     }
 
     /**
@@ -39,15 +39,20 @@ public class TableBuilder {
      *
      * @param modelSubList 类集合
      */
-    private List<com.github.hyacinth.Table> buildTable(List<Class<? extends Model<?>>> modelSubList) {
+    private void buildTable(List<Class<? extends Model<?>>> modelSubList, Config config) {
         List<com.github.hyacinth.Table> tableList = new ArrayList<com.github.hyacinth.Table>();
         for (Class<? extends Model<?>> subClass : modelSubList) {
             //获取数据库表名
             Table tableClass = subClass.getAnnotation(Table.class);
+            if(tableClass == null){
+                continue;
+            }
             String tableName = tableClass.name();
             com.github.hyacinth.Table table = new com.github.hyacinth.Table(tableName, subClass);
             List<String> primaryKeyList = new ArrayList<String>();
             tableList.add(table);
+            TableMapping.me().addMapping(table);
+            DbKit.addModelToConfigMapping(subClass, config);
 
             //FIXME 获取列信息class.getMethods 获取当前类的所有的方法
             Method[] methods = subClass.getMethods();
@@ -89,7 +94,6 @@ public class TableBuilder {
             primaryKeyList.toArray(primaryKeyArr);
             table.setPrimaryKey(primaryKeyArr);
         }
-        return tableList;
     }
 
     /**

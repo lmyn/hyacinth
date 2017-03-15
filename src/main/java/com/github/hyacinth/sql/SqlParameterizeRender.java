@@ -16,11 +16,11 @@ public class SqlParameterizeRender {
     /**
      * 模板参数化处理
      *
-     * @param params
+     * @param paras
      * @param sql
-     * @param paramsList
+     * @param parasList
      */
-    public static void render(Map<String, Object> params, StringBuilder sql, List<Object> paramsList) {
+    public static void render(Map<String, Object> paras, StringBuilder sql, List<Object> parasList) {
         int start, end = -1; //#index
         while (true) {
             //获取动态参数‘{’，‘}’索引位置
@@ -32,12 +32,12 @@ public class SqlParameterizeRender {
 
             //获取参数变量值
             String keyStr = sql.substring(start + 1, end).trim();
-            Object value = getParamsValue(keyStr, params);
+            Object value = getParamsValue(keyStr, paras);
 
             //参数值处理
             char sign = sql.charAt(start - 1);
             if (sign == '#') {
-                paramsList.add(value);
+                parasList.add(value);
                 //将参数化表达式替换成sql参数占位符
                 sql.replace(start - 1, end + 1, "?");
             } else if (sign == '@') {
@@ -46,7 +46,7 @@ public class SqlParameterizeRender {
                 if (value != null && value.getClass().isArray()) {
                     Object[] objArray = (Object[]) value;
                     for (int i = 0; i < objArray.length; i++) {
-                        paramsList.add(objArray[i]);
+                        parasList.add(objArray[i]);
                         multipleBuilder.append("?,");
                     }
                 }

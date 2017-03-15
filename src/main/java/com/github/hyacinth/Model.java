@@ -558,6 +558,12 @@ public abstract class Model<M extends Model> implements Serializable {
         }
     }
 
+    public List<M> find(String key, Map<String, Object> paras) {
+        List<Object> parasList = new ArrayList<Object>();
+        String sql = DbKit.render.render(key, paras, parasList);
+        return find(sql, parasList.toArray());
+    }
+
     /**
      * Check the table name. The table name must in sql.
      */
