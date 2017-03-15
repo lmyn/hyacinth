@@ -3,6 +3,7 @@ package com.github.hyacinth;
 import com.github.hyacinth.tools.StringTools;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,8 +16,8 @@ import java.util.Set;
 public class Table {
     private String name;
     private String[] primaryKey = null;
-    private Map<String, Class<?>> columnTypeMap;
-    private Map<String, Column> columnMap;
+    private Map<String, Class<?>> columnTypeMap = new HashMap<String, Class<?>>();
+    private Map<String, Column> columnMap = new HashMap<String, Column>();
 
     private Class<? extends Model<?>> modelClass;
 

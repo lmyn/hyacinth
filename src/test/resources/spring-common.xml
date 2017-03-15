@@ -21,7 +21,7 @@
 	<!--<context:property-placeholder location="classpath*:conf/*.properties" />-->
     <!--<context:property-placeholder location="classpath:conf/upload.properties" />-->
 
-    <!--<context:component-scan base-package="com.wisestar.irm.*.service" />-->
+    <context:component-scan base-package="cn.wisestar.*.model.base" />
 
 	<!-- 配置数据源 使用的是Druid数据源 -->
 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
@@ -60,14 +60,15 @@
         <property name="filters" value="stat" />
     </bean>
 
-	<!-- sessionFactory 将spring和Hyacinth整合 -->
-	<bean id="sqlSessionFactory" class="com.github.hyacinth.support.spring.HyacinthConfiguration"
+	<!-- spring 整合hyacinth -->
+	<bean class="com.github.hyacinth.support.spring.HyacinthConfiguration"
         init-method="init" destroy-method="close">
 		<property name="dataSource" ref="dataSource" />
         <property name="configName" value="main" />
+        <property name="basePackage" value="cn.wisestar.crm.commons.model.base"/>
         <property name="dialect" value="com.github.hyacinth.dialect.MysqlDialect" />
         <property name="isHotLoad" value="true" />
-        <property name="locations" value="E:\CodeSpace\lekas\src\test\resources" />
+        <property name="mdLocations" value="classpath*:sql/*.md" />
         <property name="interval" value="5000" />
 	</bean>
 

@@ -4,9 +4,16 @@ import com.github.hyacinth.annotation.PrimaryKey;
 import com.github.hyacinth.annotation.Table;
 import com.github.hyacinth.annotation.Column;
 import com.github.hyacinth.tools.ClassTools;
+import com.github.hyacinth.tools.PathTools;
 import com.github.hyacinth.tools.StringTools;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,20 +30,23 @@ public class TableBuilder {
 
     private JavaType javaType = new JavaType();
 
+    public List<com.github.hyacinth.Table> build(String basePackage) throws IOException {
+        return buildTable(getBaseModelClass(basePackage));
+    }
+
     /**
      * 从Model类中获取Model与Table的映射
      *
-     * @param packages 包集合
+     * @param modelSubList 类集合
      */
-    public List<com.github.hyacinth.Table> build(List<String> packages, boolean isRecursion) {
+    private List<com.github.hyacinth.Table> buildTable(List<Class<? extends Model<?>>> modelSubList) {
         List<com.github.hyacinth.Table> tableList = new ArrayList<com.github.hyacinth.Table>();
-        List<Class<? extends Model<?>>> modelSubList = getModelClass(packages, isRecursion);
         for (Class<? extends Model<?>> subClass : modelSubList) {
             //获取数据库表名
             Table tableClass = subClass.getAnnotation(Table.class);
             String tableName = tableClass.name();
             com.github.hyacinth.Table table = new com.github.hyacinth.Table(tableName, subClass);
-            List<String> primaryKeys = new ArrayList<String>();
+            List<String> primaryKeyList = new ArrayList<String>();
             tableList.add(table);
 
             //FIXME 获取列信息class.getMethods 获取当前类的所有的方法
@@ -51,6 +61,9 @@ public class TableBuilder {
                     Class<?> javaType = method.getReturnType();
 
                     Column columnAnno = method.getAnnotation(Column.class);
+                    if(columnAnno == null){
+                        continue;
+                    }
                     //列名
                     String columnName = columnAnno.name();
                     //数据库类型
@@ -66,15 +79,64 @@ public class TableBuilder {
                     // FIXME 如果有PrimaryKey注释，则表示为主键
                     PrimaryKey primaryKey = method.getAnnotation(PrimaryKey.class);
                     if (primaryKey != null) {
-                        primaryKeys.add(columnName);
+                        primaryKeyList.add(columnName);
                     }
                     table.setColumn(field, column);
-
+                    table.setColumnType(columnName, javaType);
                 }
             }
-            table.setPrimaryKey((String[]) primaryKeys.toArray());
+            String[] primaryKeyArr = new String[primaryKeyList.size()];
+            primaryKeyList.toArray(primaryKeyArr);
+            table.setPrimaryKey(primaryKeyArr);
         }
         return tableList;
+    }
+
+    /**
+     * 获取modelclass
+     *
+     * @param basePackage
+     * @return
+     * @throws IOException
+     */
+    private List<Class<? extends Model<?>>> getBaseModelClass(String basePackage) throws IOException {
+        List<Class<? extends Model<?>>> classes = new ArrayList<Class<? extends Model<?>>>();
+
+        String classPattern = "classpath*:" + basePackage.replace(".", "/") + "/*.class";
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources(classPattern);
+
+        //获取类路径
+        for (Resource resource : resources) {
+            URL url = resource.getURL();
+            String protocol = url.getProtocol(),
+                    className = null;
+            if (protocol.equals("file")) {
+                //获取classpath路径
+                String rootClassPath = PathTools.getRootClassPath(),
+                        classFilePath = resource.getFile().getAbsolutePath();
+                if (!classFilePath.contains(rootClassPath)){
+                    //处理测试路径
+                    rootClassPath = rootClassPath.replace("test-classes", "classes");
+                }
+                className = classFilePath.substring(0, classFilePath.length() - 6).replace(rootClassPath + File.separator, "").replace(File.separator, ".");
+            } else if (protocol.equals("jar")) {
+                String classUrlPath = url.getPath();
+                //从jar url中截图类名
+                className = classUrlPath.substring(classUrlPath.indexOf(".jar!/") + 6, classUrlPath.length() - 6).replace("/", ".");
+            }
+            if(className != null && !className.contains("$")){
+                try {
+                    Class<?> clazz = Class.forName(className);
+                    if(Model.class.isAssignableFrom(clazz)){
+                        classes.add((Class<? extends Model<?>>) clazz);
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return classes;
     }
 
     public void build(List<com.github.hyacinth.Table> tableList, Config config) {

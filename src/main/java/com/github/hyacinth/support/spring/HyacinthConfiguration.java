@@ -1,14 +1,20 @@
 package com.github.hyacinth.support.spring;
 
-import com.github.hyacinth.Config;
-import com.github.hyacinth.DbKit;
-import com.github.hyacinth.Table;
-import com.github.hyacinth.TableBuilder;
+import com.github.hyacinth.*;
 import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.sql.SqlTemplateFileMonitor;
+import com.github.hyacinth.tools.PathTools;
 import com.github.hyacinth.tools.StringTools;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,16 +33,19 @@ public class HyacinthConfiguration {
     //热加载
     private Boolean isHotLoad;
     //sql 模板文件路径
-    private String locations;
+    private Resource[] mdLocations;
     //配置
     private String configName;
+
+    private String basePackage;
+
     private Dialect dialect;
 
     private long interval = 5000;
 
     private boolean isStarted = false;
 
-    private SqlTemplateFileMonitor monitor = new SqlTemplateFileMonitor();
+    private SqlTemplateFileMonitor monitor;
 
     private List<Table> tableList = new ArrayList<Table>();
 
@@ -52,8 +61,12 @@ public class HyacinthConfiguration {
         this.isHotLoad = hotLoad;
     }
 
-    public void setLocations(String location) {
-        this.locations = location;
+    public void setMdLocations(Resource[] mdLocations) {
+        this.mdLocations = mdLocations;
+    }
+
+    public void setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
     }
 
     public void setConfigName(String configName) {
@@ -64,7 +77,7 @@ public class HyacinthConfiguration {
         this.interval = interval;
     }
 
-    public void init() {
+    public void init() throws IOException {
         if (isStarted) return;
         if (StringTools.isBlank(configName)) {
             throw new IllegalArgumentException("configName can not be blank");
@@ -80,14 +93,39 @@ public class HyacinthConfiguration {
 
         //如果配置上，开启了热加载功能，则启用文件监听进程
         if (isHotLoad) {
-            monitor.addListener(locations, interval);
+            if (this.monitor == null) {
+                this.monitor = new SqlTemplateFileMonitor();
+            }
+            startHotLoad();
         }
 
-        new TableBuilder().build(tableList, config);
+        new TableBuilder().build(basePackage);
         DbKit.addConfig(config);
         isStarted = true;
 
     }
+
+    /**
+     * 开启sql文件热加载
+     */
+    private void startHotLoad() throws IOException {
+        List<String> paths = new ArrayList<String>();
+        for (Resource resource : mdLocations) {
+            File file = resource.getFile();
+            String path;
+            if (file.isDirectory()) {
+                path = file.getAbsolutePath();
+            } else {
+                path = file.getParentFile().getAbsolutePath();
+            }
+            if (!paths.contains(path)) {
+                paths.add(path);
+            }
+        }
+        monitor.addListener(paths, interval);
+    }
+
+
 
     /**
      * spring 容器销毁bean时调用此方法
@@ -97,6 +135,8 @@ public class HyacinthConfiguration {
      */
     public void close() throws InterruptedException {
         //停止文件监控进程
-        monitor.shutdown();
+        if(this.monitor != null){
+            this.monitor.shutdown();
+        }
     }
 }

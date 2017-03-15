@@ -43,7 +43,7 @@ public class HyacinthTest {
 
     @Test
     public void test1() {
-        String packageName = "com.github";
+        String packageName = "cn.wisestar";
         // List<String> classNames = getClassName(packageName);
         Set<String> classNames = ClassTools.getClassName(packageName, true);
         if (classNames != null) {
@@ -81,5 +81,10 @@ public class HyacinthTest {
         gernerator.setRemovedTableNamePrefixes("sys_","cus_");
         // 生成
         gernerator.generate();
+    }
+
+    @Test
+    public void test3(){
+
     }
 }
