@@ -1,5 +1,8 @@
 package com.github.hyacinth;
 
+import com.github.hyacinth.sql.SqlBuilder;
+import com.github.hyacinth.sql.SqlCache;
+
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
@@ -18,21 +21,21 @@ public abstract class Model<M extends Model> implements Serializable {
     public static final int FILTER_BY_UPDATE = 1;
 
     public M dao() {
-        attrs = DaoContainerFactory.daoMap;
-        modifyFlag = DaoContainerFactory.daoSet;
+        attrs = Dao.daoMap;
+        modifyFlag = Dao.daoSet;
         return (M) this;
     }
 
     /**
      * Attributes of this model
      */
-    private Map<String, Object> attrs = getAttrsMap();    // getConfig().containerFactory.getAttrsMap();	// new HashMap<String, Object>();
+    private Map<String, Object> attrs = getAttrsMap();    // getConfig().container.getAttrsMap();	// new HashMap<String, Object>();
 
     public Map<String, Object> getAttrsMap() {
         Config config = getConfig();
         if (config == null)
-            return DbKit.brokenConfig.containerFactory.getAttrsMap();
-        return config.containerFactory.getAttrsMap();
+            return DbKit.brokenConfig.container.getAttrsMap();
+        return config.container.getAttrsMap();
     }
 
     /**
@@ -43,7 +46,7 @@ public abstract class Model<M extends Model> implements Serializable {
 	/*
     private Set<String> getModifyFlag() {
 		if (modifyFlag == null)
-			modifyFlag = getConfig().containerFactory.getModifyFlagSet();	// new HashSet<String>();
+			modifyFlag = getConfig().container.getModifyFlagSet();	// new HashSet<String>();
 		return modifyFlag;
 	}*/
 
@@ -51,9 +54,9 @@ public abstract class Model<M extends Model> implements Serializable {
         if (modifyFlag == null) {
             Config config = getConfig();
             if (config == null)
-                modifyFlag = DbKit.brokenConfig.containerFactory.getModifyFlagSet();
+                modifyFlag = DbKit.brokenConfig.container.getModifyFlagSet();
             else
-                modifyFlag = config.containerFactory.getModifyFlagSet();
+                modifyFlag = config.container.getModifyFlagSet();
         }
         return modifyFlag;
     }
@@ -253,21 +256,53 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Paginate.
+     * 分页
      *
-     * @param pageNumber      the page number
-     * @param pageSize        the page size
-     * @param select          the select part of the sql statement
-     * @param sqlExceptSelect the sql statement excluded select part
-     * @param paras           the parameters of sql
+     * @param pageNumber 当前页
+     * @param pageSize   页大小（每页记录数）
+     * @param key        key
+     * @param paras      参数列表
      * @return the Page object
+     * @see #doPaginate(Config, int, int, String, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Object... paras) {
+        String sql = SqlCache.fixed.get(key);
+        if (sql == null) {
+            throw new HyacinthException("Sql can not find! key:" + key);
+        }
         Config config = getConfig();
+        return doPaginate(config, pageNumber, pageSize, sql, paras);
+    }
+
+    private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Object... paras) {
         Connection conn = null;
         try {
             conn = config.getConnection();
-            return paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
+            if (pageNumber < 1 || pageSize < 1) {
+                throw new HyacinthException("PageNumber and pageSize must more than 0");
+            }
+
+            String totalSql = SqlBuilder.buildTotalSql(sql);
+            int totalRow = ((Number) Db.querySingleValue(config, conn, totalSql, paras)).intValue();
+
+            if (totalRow == 0) {
+                return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, 0, 0);    // totalRow = 0;
+            }
+
+            int totalPage = totalRow / pageSize;
+            if (totalRow % pageSize != 0) {
+                totalPage++;
+            }
+
+            if (pageNumber > totalPage) {
+                return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, totalPage, (int) totalRow);
+            }
+
+            // --------
+            String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
+
+            List<M> list = find(conn, pageSql, paras);
+            return new Page<M>(list, pageNumber, pageSize, totalPage, totalRow);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {
@@ -276,74 +311,10 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * 指定分页 sql 最外层以是否含有 group by 语句
-     * <pre>
-     * 举例：
-     * paginate(1, 10, true, "select *", "from user where id>? group by age", 123);
-     * </pre>
+     * @see #paginate(int, int, String, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-        Config config = getConfig();
-        Connection conn = null;
-        try {
-            conn = config.getConnection();
-            return doPaginate(config, conn, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
-        } catch (Exception e) {
-            throw new HyacinthException(e);
-        } finally {
-            config.close(conn);
-        }
-    }
-
-    private Page<M> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws Exception {
-        return doPaginate(config, conn, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
-    }
-
-    private Page<M> doPaginate(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) throws Exception {
-        if (pageNumber < 1 || pageSize < 1) {
-            throw new HyacinthException("pageNumber and pageSize must more than 0");
-        }
-        if (config.dialect.isTakeOverModelPaginate()) {
-            return config.dialect.takeOverModelPaginate(conn, getUsefulClass(), pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
-        }
-
-        String totalRowSql = "select count(*) " + config.dialect.replaceOrderBy(sqlExceptSelect);
-        List result = Db.query(config, conn, totalRowSql, paras);
-        int size = result.size();
-        if (isGroupBySql == null) {
-            isGroupBySql = size > 1;
-        }
-
-        long totalRow;
-        if (isGroupBySql) {
-            totalRow = size;
-        } else {
-            totalRow = (size > 0) ? ((Number) result.get(0)).longValue() : 0;
-        }
-        if (totalRow == 0) {
-            return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, 0, 0);    // totalRow = 0;
-        }
-
-        int totalPage = (int) (totalRow / pageSize);
-        if (totalRow % pageSize != 0) {
-            totalPage++;
-        }
-
-        if (pageNumber > totalPage) {
-            return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, totalPage, (int) totalRow);
-        }
-
-        // --------
-        String sql = config.dialect.forPaginate(pageNumber, pageSize, select, sqlExceptSelect);
-        List<M> list = find(conn, sql, paras);
-        return new Page<M>(list, pageNumber, pageSize, totalPage, (int) totalRow);
-    }
-
-    /**
-     * @see #paginate(int, int, String, String, Object...)
-     */
-    public Page<M> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
-        return paginate(pageNumber, pageSize, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
+    public Page<M> paginate(int pageNumber, int pageSize, String sql) {
+        return paginate(pageNumber, pageSize, sql, DbKit.NULL_PARA_ARRAY);
     }
 
     /**
@@ -375,7 +346,7 @@ public abstract class Model<M extends Model> implements Serializable {
         StringBuilder sql = new StringBuilder();
         List<Object> paras = new ArrayList<Object>();
         config.dialect.forModelSave(table, attrs, sql, paras);
-        // if (paras.size() == 0)	return false;	// The sql "insert into tableName() values()" works fine, so delete this line
+        // if (paras.size() == 0)	return false;	// The fixed "insert into tableName() values()" works fine, so delete this line
 
         // --------
         Connection conn = null;
@@ -478,7 +449,7 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Update model.
+     * 更新model
      */
     public boolean update() {
         filter(FILTER_BY_UPDATE);
@@ -522,7 +493,7 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Find model.
+     * 查询Model
      */
     private List<M> find(Connection conn, String sql, Object... paras) throws Exception {
         Config config = getConfig();
@@ -539,18 +510,18 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Find model.
+     * 查询Model.
      *
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
-     * @return the list of Model
+     * @param key   fixed key
+     * @param paras fixed 参数
+     * @return Model list
      */
-    public List<M> find(String sql, Object... paras) {
+    public List<M> find(String key, Object... paras) {
         Config config = getConfig();
         Connection conn = null;
         try {
             conn = config.getConnection();
-            return find(conn, sql, paras);
+            return find(conn, SqlCache.fixed.get(key), paras);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {
@@ -558,6 +529,9 @@ public abstract class Model<M extends Model> implements Serializable {
         }
     }
 
+    /**
+     * @see #find(String, Object...)
+     */
     public List<M> find(String key, Map<String, Object> paras) {
         List<Object> parasList = new ArrayList<Object>();
         String sql = DbKit.render.render(key, paras, parasList);
@@ -565,43 +539,50 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Check the table name. The table name must in sql.
+     * @see #find(String, Map)
      */
-    private void checkTableName(Class<? extends Model> modelClass, String sql) {
-        Table table = TableMapping.me().getMapping(modelClass);
-        if (!sql.toLowerCase().contains(table.getName().toLowerCase()))
-            throw new HyacinthException("The table name: " + table.getName() + " not in your sql.");
+    public List<M> find(String key, M model) {
+        return find(key, model.getAttrs());
     }
 
     /**
      * @see #find(String, Object...)
      */
-    public List<M> find(String sql) {
-        return find(sql, DbKit.NULL_PARA_ARRAY);
+    public List<M> find(String key) {
+        return find(SqlCache.fixed.get(key), DbKit.NULL_PARA_ARRAY);
     }
 
     /**
-     * Find first model. I recommend add "limit 1" in your sql.
+     * Check the table name. The table name must in fixed.
+     */
+    private void checkTableName(Class<? extends Model> modelClass, String sql) {
+        Table table = TableMapping.me().getMapping(modelClass);
+        if (!sql.toLowerCase().contains(table.getName().toLowerCase()))
+            throw new HyacinthException("The table name: " + table.getName() + " not in your fixed.");
+    }
+
+    /**
+     * 查询第一条记录. 建议在sql中加上 "limit 1"
      *
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
+     * @param key   fixed key
+     * @param paras fixed 参数
      * @return Model
      */
-    public M findFirst(String sql, Object... paras) {
-        List<M> result = find(sql, paras);
+    public M findFirst(String key, Object... paras) {
+        List<M> result = find(SqlCache.fixed.get(key), paras);
         return result.size() > 0 ? result.get(0) : null;
     }
 
     /**
-     * @param sql an SQL statement
+     * @param key fixed key
      * @see #findFirst(String, Object...)
      */
-    public M findFirst(String sql) {
-        return findFirst(sql, DbKit.NULL_PARA_ARRAY);
+    public M findFirst(String key) {
+        return findFirst(SqlCache.fixed.get(key), DbKit.NULL_PARA_ARRAY);
     }
 
     /**
-     * Find model by id.
+     * 根据Id查询 Model 适合单个主键的表.
      * <pre>
      * Example:
      * User user = User.dao.findById(123);
@@ -614,7 +595,7 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Find model by composite id values.
+     * 根据Id查询 Model 适合复合主键的表.
      * <pre>
      * Example:
      * User user = User.dao.findById(123, 456);
@@ -627,28 +608,21 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Find model by id and load specific columns only.
-     * <pre>
-     * Example:
-     * User user = User.dao.findByIdLoadColumns(123, "name, age");
-     * </pre>
-     *
-     * @param idValue the id value of the model
-     * @param columns the specific columns to load
+     * @see #findByIdLoadColumns(Object[], String)
      */
     public M findByIdLoadColumns(Object idValue, String columns) {
         return findByIdLoadColumns(new Object[]{idValue}, columns);
     }
 
     /**
-     * Find model by composite id values and load specific columns only.
+     * 根据主键查询Model，但只查询特定的列
      * <pre>
      * Example:
      * User user = User.dao.findByIdLoadColumns(new Object[]{123, 456}, "name, age");
      * </pre>
      *
-     * @param idValues the composite id values of the model
-     * @param columns  the specific columns to load
+     * @param idValues 主键ID值
+     * @param columns  需要查询的列， 多个列可以用 “,” 号分隔
      */
     public M findByIdLoadColumns(Object[] idValues, String columns) {
         Table table = getMapping();
@@ -661,20 +635,17 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Set attributes with other model.
-     *
-     * @param model the Model
-     * @return this Model
+     * @see #_setAttrs(Map)
      */
     public M _setAttrs(M model) {
         return (M) _setAttrs(model.getAttrs());
     }
 
     /**
-     * Set attributes with Map.
+     * 设置Model属性值
      *
-     * @param attrs attributes of this model
-     * @return this Model
+     * @param attrs Map<String, Object></>
+     * @return model
      */
     public M _setAttrs(Map<String, Object> attrs) {
         for (Map.Entry<String, Object> e : attrs.entrySet())
@@ -683,10 +654,7 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Remove attribute of this model.
-     *
-     * @param attr the attribute name of the model
-     * @return this model
+     * @see #remove(String...)
      */
     public M remove(String attr) {
         attrs.remove(attr);
@@ -695,24 +663,24 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Remove attributes of this model.
+     * 从model中移除属性
      *
-     * @param attrs the attribute names of the model
-     * @return this model
+     * @param attrs 属性名
+     * @return 返回model
      */
     public M remove(String... attrs) {
         if (attrs != null)
-            for (String a : attrs) {
-                this.attrs.remove(a);
-                this.getModifyFlag().remove(a);
+            for (String attr : attrs) {
+                this.attrs.remove(attr);
+                this.getModifyFlag().remove(attr);
             }
         return (M) this;
     }
 
     /**
-     * Remove attributes if it is null.
+     * 移除属性值为空的属性
      *
-     * @return this model
+     * @return 返回model
      */
     public M removeNullValueAttrs() {
         for (Iterator<Map.Entry<String, Object>> it = attrs.entrySet().iterator(); it.hasNext(); ) {
@@ -726,16 +694,16 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Keep attributes of this model and remove other attributes.
+     * 保留指定属性（多个），移除其他属性
      *
-     * @param attrs the attribute names of the model
-     * @return this model
+     * @param attrs 需要保留的属性
+     * @return 返回修改后的model
      */
     public M keep(String... attrs) {
         if (attrs != null && attrs.length > 0) {
             Config config = getConfig();
-            Map<String, Object> newAttrs = config.containerFactory.getAttrsMap();    // new HashMap<String, Object>(attrs.length);
-            Set<String> newModifyFlag = config.containerFactory.getModifyFlagSet();    // new HashSet<String>();
+            Map<String, Object> newAttrs = config.container.getAttrsMap();    // new HashMap<String, Object>(attrs.length);
+            Set<String> newModifyFlag = config.container.getModifyFlagSet();    // new HashSet<String>();
             for (String a : attrs) {
                 if (this.attrs.containsKey(a))    // prevent put null value to the newColumns
                     newAttrs.put(a, this.attrs.get(a));
@@ -752,10 +720,10 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Keep attribute of this model and remove other attributes.
+     * 保留指定属性（单个），移除其他属性
      *
-     * @param attr the attribute name of the model
-     * @return this model
+     * @param attr 需要保留的属性
+     * @return 返回修改后的model
      */
     public M keep(String attr) {
         if (attrs.containsKey(attr)) {    // prevent put null value to the newColumns
@@ -774,9 +742,9 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Remove all attributes of this model.
+     * 清除属性
      *
-     * @return this model
+     * @return 返回修改后的model
      */
     public M clear() {
         attrs.clear();
@@ -818,7 +786,7 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Return attribute names of this model.
+     * 获取所有属性名
      */
     public String[] _getAttrNames() {
         Set<String> attrNameSet = attrs.keySet();
@@ -826,7 +794,7 @@ public abstract class Model<M extends Model> implements Serializable {
     }
 
     /**
-     * Return attribute values of this model.
+     * 获取所有值（不包括属性名称）
      */
     public Object[] _getAttrValues() {
         Collection<Object> attrValueCollection = attrs.values();

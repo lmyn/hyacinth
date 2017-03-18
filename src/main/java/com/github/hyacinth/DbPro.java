@@ -1,5 +1,6 @@
 package com.github.hyacinth;
 
+import com.github.hyacinth.sql.SqlBuilder;
 import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +112,35 @@ public class DbPro {
      */
     public <T> List<T> query(String sql) {        // return  List<object[]> or List<object>
         return query(sql, DbKit.NULL_PARA_ARRAY);
+    }
+
+    Object querySingleValue(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        PreparedStatement pst = conn.prepareStatement(sql);
+        config.dialect.fillStatement(pst, paras);
+        ResultSet rs = pst.executeQuery();
+        Object obj = rs.getObject(1);
+        DbKit.close(rs, pst);
+        return obj;
+    }
+
+    public Object querySingleValue(String sql, Object... paras){
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            return querySingleValue(config, conn, sql, paras);
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
+        }
+    }
+
+    /**
+     * @param sql an SQL statement
+     * @see #query(String, Object...)
+     */
+    public Object querySingleValue(String sql){
+        return querySingleValue(sql, DbKit.NULL_PARA_ARRAY);
     }
 
     /**
@@ -306,11 +336,11 @@ public class DbPro {
         return update(sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException{
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);
         ResultSet rs = pst.executeQuery();
-        List<Record> result = RecordBuilder.build(config, rs);
+        List<Record> result = RecordBuilder.buildList(config, rs);
         DbKit.close(rs, pst);
         return result;
     }
@@ -338,6 +368,15 @@ public class DbPro {
         return find(sql, DbKit.NULL_PARA_ARRAY);
     }
 
+    Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        PreparedStatement pst = conn.prepareStatement(sql);
+        config.dialect.fillStatement(pst, paras);
+        ResultSet rs = pst.executeQuery();
+        Record record = RecordBuilder.build(config, rs);
+        DbKit.close(rs, pst);
+        return record;
+    }
+
     /**
      * Find first record. I recommend add "limit 1" in your sql.
      *
@@ -346,8 +385,15 @@ public class DbPro {
      * @return the Record object
      */
     public Record findFirst(String sql, Object... paras) {
-        List<Record> result = find(sql, paras);
-        return result.size() > 0 ? result.get(0) : null;
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            return findFirst(config, conn, sql, paras);
+        } catch (SQLException e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
+        }
     }
 
     /**
@@ -471,48 +517,35 @@ public class DbPro {
         return deleteById(tableName, defaultPrimaryKey, record.get(defaultPrimaryKey));
     }
 
-    Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
-        return doPaginate(config, conn, pageNumber, pageSize, null, select, sqlExceptSelect, paras);
+    Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
+        return doPaginate(config, conn, pageNumber, pageSize, sql, paras);
     }
 
-    Page<Record> doPaginate(Config config, Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) throws SQLException {
+    Page<Record> doPaginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
         if (pageNumber < 1 || pageSize < 1) {
             throw new HyacinthException("pageNumber and pageSize must more than 0");
         }
-        if (config.dialect.isTakeOverDbPaginate()) {
-            return config.dialect.takeOverDbPaginate(conn, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
-        }
 
-        String totalRowSql = "select count(*) " + config.dialect.replaceOrderBy(sqlExceptSelect);
-        List result = query(config, conn, totalRowSql, paras);
-        int size = result.size();
-        if (isGroupBySql == null) {
-            isGroupBySql = size > 1;
-        }
+        String totalSql = SqlBuilder.buildTotalSql(sql);
+        int totalRow = ((Number) Db.querySingleValue(config, conn, totalSql, paras)).intValue();
 
-        long totalRow;
-        if (isGroupBySql) {
-            totalRow = size;
-        } else {
-            totalRow = (size > 0) ? ((Number) result.get(0)).longValue() : 0;
-        }
         if (totalRow == 0) {
             return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, 0, 0);
         }
 
-        int totalPage = (int) (totalRow / pageSize);
+        int totalPage = totalRow / pageSize;
         if (totalRow % pageSize != 0) {
             totalPage++;
         }
 
         if (pageNumber > totalPage) {
-            return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, totalPage, (int) totalRow);
+            return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, totalPage, totalRow);
         }
 
         // --------
-        String sql = config.dialect.forPaginate(pageNumber, pageSize, select, sqlExceptSelect);
+        String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
         List<Record> list = find(config, conn, sql, paras);
-        return new Page<Record>(list, pageNumber, pageSize, totalPage, (int) totalRow);
+        return new Page<Record>(list, pageNumber, pageSize, totalPage, totalRow);
     }
 
     /**
@@ -520,16 +553,15 @@ public class DbPro {
      *
      * @param pageNumber      the page number
      * @param pageSize        the page size
-     * @param select          the select part of the sql statement
-     * @param sqlExceptSelect the sql statement excluded select part
+     * @param sql          sql statement
      * @param paras           the parameters of sql
      * @return the Page object
      */
-    public Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
+    public Page<Record> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
         Connection conn = null;
         try {
             conn = config.getConnection();
-            return paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
+            return paginate(config, conn, pageNumber, pageSize, sql, paras);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {
@@ -537,23 +569,12 @@ public class DbPro {
         }
     }
 
-    public Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-        Connection conn = null;
-        try {
-            conn = config.getConnection();
-            return doPaginate(config, conn, pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
-        } catch (Exception e) {
-            throw new HyacinthException(e);
-        } finally {
-            config.close(conn);
-        }
-    }
 
     /**
-     * @see #paginate(int, int, boolean, String, String, Object...)
+     * @see #paginate(int, int, String, Object...)
      */
-    public Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
-        return paginate(pageNumber, pageSize, select, sqlExceptSelect, DbKit.NULL_PARA_ARRAY);
+    public Page<Record> paginate(int pageNumber, int pageSize, String sql) {
+        return paginate(pageNumber, pageSize, sql, DbKit.NULL_PARA_ARRAY);
     }
 
     boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {

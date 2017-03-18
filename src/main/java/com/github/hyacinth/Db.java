@@ -57,6 +57,18 @@ public class Db {
         return DbPro.MAIN.queryFirst(sql);
     }
 
+    static Object querySingleValue(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.querySingleValue(config, conn, sql, paras);
+    }
+
+    public static Object querySingleValue(String sql, Object... paras){
+        return DbPro.MAIN.querySingleValue(sql, paras);
+    }
+
+    public static Object querySingleValue(String sql){
+        return DbPro.MAIN.querySingleValue(sql);
+    }
+
     // 26 queryXxx method below -----------------------------------------------
     /**
      * Execute sql query just return one column.
@@ -205,7 +217,7 @@ public class Db {
         return DbPro.MAIN.update(sql);
     }
 
-    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
         return DbPro.MAIN.find(config, conn, sql, paras);
     }
 
@@ -222,6 +234,10 @@ public class Db {
      */
     public static List<Record> find(String sql) {
         return DbPro.MAIN.find(sql);
+    }
+
+    public static Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.findFirst(config, conn, sql, paras);
     }
 
     /**
@@ -326,32 +342,27 @@ public class Db {
         return DbPro.MAIN.delete(tableName, record);
     }
 
-    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) throws SQLException {
-        return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, select, sqlExceptSelect, paras);
+    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, sql, paras);
     }
 
     /**
      * Paginate.
      * @param pageNumber the page number
      * @param pageSize the page size
-     * @param select the select part of the sql statement
-     * @param sqlExceptSelect the sql statement excluded select part
+     * @param sql sql statement
      * @param paras the parameters of sql
      * @return the Page object
      */
-    public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect, Object... paras) {
-        return DbPro.MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect, paras);
-    }
-
-    public static Page<Record> paginate(int pageNumber, int pageSize, boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) {
-        return DbPro.MAIN.paginate(pageNumber, pageSize, isGroupBySql, select, sqlExceptSelect, paras);
+    public static Page<Record> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
+        return DbPro.MAIN.paginate(pageNumber, pageSize, sql, paras);
     }
 
     /**
-     * @see #paginate(int, int, String, String)
+     * @see #paginate(int, int, String, Object...)
      */
-    public static Page<Record> paginate(int pageNumber, int pageSize, String select, String sqlExceptSelect) {
-        return DbPro.MAIN.paginate(pageNumber, pageSize, select, sqlExceptSelect);
+    public static Page<Record> paginate(int pageNumber, int pageSize, String sql) {
+        return DbPro.MAIN.paginate(pageNumber, pageSize, sql);
     }
 
     static boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {

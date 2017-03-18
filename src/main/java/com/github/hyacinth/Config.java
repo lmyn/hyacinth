@@ -25,7 +25,7 @@ public class Config {
     Dialect dialect;
     boolean showSql;
     boolean devMode;
-    IContainerFactory containerFactory;
+    IContainer container;
 
     /**
      * Constructor with full parameters
@@ -35,16 +35,16 @@ public class Config {
      * @param dialect          the dialect
      * @param showSql          the showSql
      * @param devMode          the devMode
-     * @param containerFactory the containerFactory
+     * @param container the container
      */
-    public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, IContainerFactory containerFactory) {
+    public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, IContainer container) {
         if (StringTools.isBlank(name))
             throw new IllegalArgumentException("Config name can not be blank");
         if (dataSource == null)
             throw new IllegalArgumentException("DataSource can not be null");
         if (dialect == null)
             throw new IllegalArgumentException("Dialect can not be null");
-        if (containerFactory == null)
+        if (container == null)
             throw new IllegalArgumentException("ContainerFactory can not be null");
 
         this.name = name.trim();
@@ -52,7 +52,7 @@ public class Config {
         this.dialect = dialect;
         this.showSql = showSql;
         this.devMode = devMode;
-        this.containerFactory = containerFactory;
+        this.container = container;
     }
 
     /**
@@ -66,7 +66,7 @@ public class Config {
      * Constructor with name, dataSource and dialect
      */
     public Config(String name, DataSource dataSource, Dialect dialect) {
-        this(name, dataSource, dialect, false, false, IContainerFactory.defaultContainerFactory);
+        this(name, dataSource, dialect, false, false, IContainer.defaultContainer);
     }
 
     private Config() {
@@ -81,7 +81,7 @@ public class Config {
         ret.dialect = new MysqlDialect();
         ret.showSql = false;
         ret.devMode = false;
-        ret.containerFactory = IContainerFactory.defaultContainerFactory;
+        ret.container = IContainer.defaultContainer;
         return ret;
     }
 
@@ -101,8 +101,8 @@ public class Config {
         this.dataSource = dataSource;
     }
 
-    public IContainerFactory getContainerFactory() {
-        return containerFactory;
+    public IContainer getContainer() {
+        return container;
     }
 
     public boolean isShowSql() {

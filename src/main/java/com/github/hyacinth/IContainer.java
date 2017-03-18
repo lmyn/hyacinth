@@ -5,14 +5,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public interface IContainerFactory {
+public interface IContainer {
     Map getAttrsMap();
 
     Map getColumnsMap();
 
     Set getModifyFlagSet();
 
-    static final IContainerFactory defaultContainerFactory = new IContainerFactory() {
+    static final IContainer defaultContainer = new IContainer() {
 
         public Map<String, Object> getAttrsMap() {
             return new HashMap<String, Object>();

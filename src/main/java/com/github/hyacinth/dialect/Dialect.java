@@ -23,7 +23,7 @@ public abstract class Dialect {
     // Methods for common
     public abstract String forTableBuilderDoBuild(String tableName);
 
-    public abstract String forPaginate(int pageNumber, int pageSize, String select, String sqlExceptSelect);
+    public abstract String forPaginate(int pageNumber, int pageSize, String sql);
 
     // Methods for Model
     public abstract String forModelFindById(Table table, String columns);
@@ -59,8 +59,7 @@ public abstract class Dialect {
         return false;
     }
 
-    @SuppressWarnings("rawtypes")
-    public Page takeOverModelPaginate(Connection conn, Class<? extends Model> modelClass, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) throws Exception {
+    public Page takeOverModelPaginate(Class<? extends Model> modelClass) throws Exception {
         throw new RuntimeException("You should implements this method in " + getClass().getName());
     }
 

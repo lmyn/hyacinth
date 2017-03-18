@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 将ResultSet封装成Record
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/2/8
@@ -16,41 +18,61 @@ import java.util.Map;
  */
 public class RecordBuilder {
 
-    public static final List<Record> build(Config config, ResultSet rs) throws SQLException {
-        List<Record> result = new ArrayList<Record>();
+    /**
+     * 用于处理返回结果为单条记录或取结果集第一条记录应用场景
+     *
+     * @param rs     结果集
+     * @param config
+     * @return Record
+     * @throws SQLException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    public static Record build(Config config, ResultSet rs) throws SQLException {
+        Record record = null;
+        // 获取结果集数据结构以及相应列的数据类型
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
+        // +1 是为了和ResultSet中索引同步（ResultSet索引从1开始），统一循环的起始索引为1
         String[] labelNames = new String[columnCount + 1];
         int[] types = new int[columnCount + 1];
-        buildLabelNamesAndTypes(rsmd, labelNames, types);
-        while (rs.next()) {
-            Record record = new Record();
-            record.setColumnsMap(config.containerFactory.getColumnsMap());
-            Map<String, Object> columns = record.getColumns();
-            for (int i = 1; i <= columnCount; i++) {
-                Object value;
-                if (types[i] < Types.BLOB)
-                    value = rs.getObject(i);
-                else if (types[i] == Types.CLOB)
-                    value = ModelBuilder.handleClob(rs.getClob(i));
-                else if (types[i] == Types.NCLOB)
-                    value = ModelBuilder.handleClob(rs.getNClob(i));
-                else if (types[i] == Types.BLOB)
-                    value = ModelBuilder.handleBlob(rs.getBlob(i));
-                else
-                    value = rs.getObject(i);
+        RsKit.bindLabelNamesAndTypes(rsmd, labelNames, types);
 
-                columns.put(labelNames[i], value);
-            }
-            result.add(record);
+        if (rs.next()) {
+            record = new Record();
+            record.setColumnsMap(config.container.getColumnsMap());
+            RsKit.fetch(rs, columnCount, labelNames, types, record.getColumns());
+
         }
-        return result;
+        return record;
     }
 
-    private static final void buildLabelNamesAndTypes(ResultSetMetaData rsmd, String[] labelNames, int[] types) throws SQLException {
-        for (int i = 1; i < labelNames.length; i++) {
-            labelNames[i] = rsmd.getColumnLabel(i);
-            types[i] = rsmd.getColumnType(i);
+    /**
+     * 用于处理需要获取多条结果集
+     *
+     * @param rs     结果集
+     * @param config
+     * @return List<Record>
+     * @throws SQLException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
+    public static List<Record> buildList(Config config, ResultSet rs) throws SQLException {
+        List<Record> list = new ArrayList<Record>();
+        // 获取结果集数据结构以及相应列的数据类型
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        // +1 是为了和ResultSet中索引同步（ResultSet索引从1开始），统一循环的起始索引为1
+        String[] labelNames = new String[columnCount + 1];
+        int[] types = new int[columnCount + 1];
+        RsKit.bindLabelNamesAndTypes(rsmd, labelNames, types);
+
+        while (rs.next()) {
+            Record record = new Record();
+            record.setColumnsMap(config.container.getColumnsMap());
+            RsKit.fetch(rs, columnCount, labelNames, types, record.getColumns());
+            list.add(record);
         }
+        return list;
     }
 }

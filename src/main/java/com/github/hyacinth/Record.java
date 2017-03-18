@@ -13,11 +13,11 @@ import java.util.Set;
 public class Record {
     private static final long serialVersionUID = 905784513600884082L;
 
-    private Map<String, Object> columns;    // = getColumnsMap();	// getConfig().containerFactory.getColumnsMap();	// new HashMap<String, Object>();
+    private Map<String, Object> columns;    // = getColumnsMap();	// getConfig().container.getColumnsMap();	// new HashMap<String, Object>();
 
     /**
-     * Set the containerFactory by configName.
-     * Only the containerFactory of the config used by Record for getColumnsMap()
+     * Set the container by configName.
+     * Only the container of the config used by Record for getColumnsMap()
      *
      * @param configName the config name
      */
@@ -38,10 +38,10 @@ public class Record {
     @SuppressWarnings("unchecked")
     private void processColumnsMap(Config config) {
         if (columns == null || columns.size() == 0) {
-            columns = config.containerFactory.getColumnsMap();
+            columns = config.container.getColumnsMap();
         } else {
             Map<String, Object> columnsOld = columns;
-            columns = config.containerFactory.getColumnsMap();
+            columns = config.container.getColumnsMap();
             columns.putAll(columnsOld);
         }
     }
@@ -49,13 +49,13 @@ public class Record {
     /**
      * Return columns map.
      */
-    @SuppressWarnings("unchecked")
     public Map<String, Object> getColumns() {
         if (columns == null) {
-            if (DbKit.config == null)
-                columns = DbKit.brokenConfig.containerFactory.getColumnsMap();
-            else
-                columns = DbKit.config.containerFactory.getColumnsMap();
+            if (DbKit.config == null) {
+                columns = DbKit.brokenConfig.container.getColumnsMap();
+            } else {
+                columns = DbKit.config.container.getColumnsMap();
+            }
         }
         return columns;
     }
@@ -132,7 +132,7 @@ public class Record {
      */
     public Record keep(String... columns) {
         if (columns != null && columns.length > 0) {
-            Map<String, Object> newColumns = new HashMap<String, Object>(columns.length);    // getConfig().containerFactory.getColumnsMap();
+            Map<String, Object> newColumns = new HashMap<String, Object>(columns.length);    // getConfig().container.getColumnsMap();
             for (String c : columns)
                 if (this.getColumns().containsKey(c))    // prevent put null value to the newColumns
                     newColumns.put(c, this.getColumns().get(c));

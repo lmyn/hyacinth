@@ -123,7 +123,7 @@ public class SqlXmlResolve {
     private boolean isStableSql(String stable, String sqlKey, String sql) {
         //处理静态sql
         if ("true".equals(stable) || (StringTools.isBlank(stable) && !sql.contains("#{") && !sql.contains("${") && !sql.contains("@{"))) {
-            SqlCache.sql.put(sqlKey, sql);
+            SqlCache.fixed.put(sqlKey, sql);
             return true;
         }
         return false;

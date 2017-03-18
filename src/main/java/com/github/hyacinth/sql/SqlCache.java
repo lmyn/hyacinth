@@ -15,9 +15,9 @@ import jetbrick.template.JetTemplate;
 public class SqlCache {
 
     //静态sql缓存
-    public static final Cache<String, String> sql = new PureCache<String, String>("sql");
+    public static final Cache<String, String> fixed = new PureCache<String, String>("fixed");
 
     //编译后模板缓存
-    public static final Cache<String, JetTemplate> templateCache = new PureCache<String, JetTemplate>("template");
+    public static final Cache<String, JetTemplate> sqlTemplate = new PureCache<String, JetTemplate>("sqlTemplate");
 
 }

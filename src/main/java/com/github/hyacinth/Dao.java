@@ -6,14 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * DaoContainerFactory
+ * Dao
  */
-public class DaoContainerFactory implements IContainerFactory {
+public class Dao implements IContainer {
 	
 	public static final Map<String, Object> daoMap = new DaoMap<Object>();
 	public static final Set<String> daoSet = new DaoSet();
 	
-	private DaoContainerFactory() {
+	private Dao() {
 	}
 	
 	public Map<String, Object> getAttrsMap() {

@@ -1,7 +1,7 @@
 package com.github.hyacinth.sql.jetx;
 
 import com.github.hyacinth.sql.Render;
-import com.github.hyacinth.sql.SqlParameterizeRender;
+import com.github.hyacinth.sql.SqlBuilder;
 import com.github.hyacinth.sql.SqlCache;
 import jetbrick.template.JetTemplate;
 import org.slf4j.Logger;
@@ -34,7 +34,7 @@ public class JetbrickTemplateRender implements Render {
         //模板引擎渲染
         StringBuilder sql = new StringBuilder(jetEngineRender(key, paras));
         //二次渲染
-        SqlParameterizeRender.render(paras, sql, parasList);
+        SqlBuilder.parameterizedRender(paras, sql, parasList);
 
         return sql.toString();
     }
@@ -49,7 +49,7 @@ public class JetbrickTemplateRender implements Render {
     private String jetEngineRender(String key, Map<String, Object> paras) {
         String result;
         //获取模板缓存
-        JetTemplate jetTemplate = SqlCache.templateCache.get(key);
+        JetTemplate jetTemplate = SqlCache.sqlTemplate.get(key);
 
         StringWriter stringWriter = new StringWriter();
         if (jetTemplate != null) {

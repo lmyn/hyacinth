@@ -200,7 +200,7 @@ public class TableBuilder {
     }
 
     private void doBuild(com.github.hyacinth.Table table, Connection conn, Config config) throws SQLException {
-        table.setColumnTypeMap(config.containerFactory.getAttrsMap());
+        table.setColumnTypeMap(config.container.getAttrsMap());
         if (table.getPrimaryKey() == null) {
             table.setPrimaryKey(config.dialect.getDefaultPrimaryKey());
         }

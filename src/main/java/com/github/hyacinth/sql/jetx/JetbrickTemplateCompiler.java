@@ -32,7 +32,7 @@ public class JetbrickTemplateCompiler {
         //编译模板
         JetTemplate jetTemplate = jetEngine.createTemplate(name, template);
         //将编译后的模板放入缓存
-        SqlCache.templateCache.put(name, jetTemplate);
+        SqlCache.sqlTemplate.put(name, jetTemplate);
         LOGGER.debug("Compiled sql sql:{} --> \n sql sql: {}", name, template);
     }
 

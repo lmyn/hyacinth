@@ -47,7 +47,7 @@ public class MdResolve {
                         //处理静态sql
                         if (key.startsWith("*")) {
                             key = key.substring(1, key.length() - 1).trim();
-                            SqlCache.sql.put(group + key, buildSql(list));
+                            SqlCache.fixed.put(group + key, buildSql(list));
                         } else {
                             //动态sql交给模板引擎
                             JetbrickTemplateCompiler.compile(group + key, buildSql(list));
