@@ -14,9 +14,9 @@ import java.util.LinkedList;
  * Date: 2017/2/9
  * Time: 9:33
  */
-public class MarkdownResolve {
+public class Resolve {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MarkdownResolve.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Resolve.class);
 
     protected String lineSeparator = System.getProperty("line.separator", "\n");
 
