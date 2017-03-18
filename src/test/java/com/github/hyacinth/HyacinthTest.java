@@ -1,11 +1,10 @@
 package com.github.hyacinth;
 
 import com.github.hyacinth.dialect.MysqlDialect;
-import com.github.hyacinth.generator.DataDictionaryGenerator;
 import com.github.hyacinth.generator.Generator;
-import com.github.hyacinth.monitor.FileAlterationListener;
-import com.github.hyacinth.monitor.FileAlterationMonitor;
-import com.github.hyacinth.monitor.FileAlterationObserver;
+import com.github.hyacinth.sql.monitor.FileAlterationListener;
+import com.github.hyacinth.sql.monitor.FileAlterationMonitor;
+import com.github.hyacinth.sql.monitor.FileAlterationObserver;
 import com.github.hyacinth.tools.ClassTools;
 import com.github.hyacinth.tools.PathTools;
 import org.junit.Test;
@@ -13,14 +12,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.io.File;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Author: luoyong

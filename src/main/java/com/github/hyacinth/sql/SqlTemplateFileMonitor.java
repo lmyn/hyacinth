@@ -1,7 +1,7 @@
 package com.github.hyacinth.sql;
 
-import com.github.hyacinth.monitor.FileAlterationMonitor;
-import com.github.hyacinth.monitor.FileAlterationObserver;
+import com.github.hyacinth.sql.monitor.FileAlterationMonitor;
+import com.github.hyacinth.sql.monitor.FileAlterationObserver;
 import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

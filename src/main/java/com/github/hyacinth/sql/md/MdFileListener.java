@@ -1,7 +1,7 @@
 package com.github.hyacinth.sql.md;
 
-import com.github.hyacinth.monitor.FileAlterationListener;
-import com.github.hyacinth.monitor.FileAlterationObserver;
+import com.github.hyacinth.sql.monitor.FileAlterationListener;
+import com.github.hyacinth.sql.monitor.FileAlterationObserver;
 
 import java.io.File;
 

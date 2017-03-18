@@ -1,4 +1,4 @@
-package com.github.hyacinth.monitor;
+package com.github.hyacinth.sql.monitor;
 
 import java.io.File;
 
