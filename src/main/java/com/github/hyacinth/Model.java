@@ -283,7 +283,7 @@ public abstract class Model<M extends Model> implements Serializable {
             }
 
             String totalSql = SqlBuilder.buildTotalSql(sql);
-            int totalRow = ((Number) Db.querySingleValue(config, conn, totalSql, paras)).intValue();
+            int totalRow = Db.queryColumn(config, conn, totalSql, paras);
 
             if (totalRow == 0) {
                 return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, 0, 0);    // totalRow = 0;

@@ -107,43 +107,6 @@ public class DbPro {
     }
 
     /**
-     * @param sql an SQL statement
-     * @see #query(String, Object...)
-     */
-    public <T> List<T> query(String sql) {        // return  List<object[]> or List<object>
-        return query(sql, DbKit.NULL_PARA_ARRAY);
-    }
-
-    Object querySingleValue(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        PreparedStatement pst = conn.prepareStatement(sql);
-        config.dialect.fillStatement(pst, paras);
-        ResultSet rs = pst.executeQuery();
-        Object obj = rs.getObject(1);
-        DbKit.close(rs, pst);
-        return obj;
-    }
-
-    public Object querySingleValue(String sql, Object... paras){
-        Connection conn = null;
-        try {
-            conn = config.getConnection();
-            return querySingleValue(config, conn, sql, paras);
-        } catch (Exception e) {
-            throw new HyacinthException(e);
-        } finally {
-            config.close(conn);
-        }
-    }
-
-    /**
-     * @param sql an SQL statement
-     * @see #query(String, Object...)
-     */
-    public Object querySingleValue(String sql){
-        return querySingleValue(sql, DbKit.NULL_PARA_ARRAY);
-    }
-
-    /**
      * Execute sql query and return the first result. I recommend add "limit 1" in your sql.
      *
      * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
@@ -168,27 +131,36 @@ public class DbPro {
 
     // 26 queryXxx method below -----------------------------------------------
 
+    <T> T queryColumn(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        PreparedStatement pst = conn.prepareStatement(sql);
+        config.dialect.fillStatement(pst, paras);
+        ResultSet rs = pst.executeQuery();
+        Object obj = rs.getObject(1);
+        DbKit.close(rs, pst);
+        return (T) obj;
+    }
+
     /**
      * Execute sql query just return one column.
      *
-     * @param <T>   the type of the column that in your sql's select statement
      * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
      * @return <T> T
      */
     public <T> T queryColumn(String sql, Object... paras) {
-        List<T> result = query(sql, paras);
-        if (result.size() > 0) {
-            T temp = result.get(0);
-            if (temp instanceof Object[])
-                throw new HyacinthException("Only ONE COLUMN can be queried.");
-            return temp;
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            return queryColumn(config, conn, sql, paras);
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
         }
-        return null;
     }
 
     public <T> T queryColumn(String sql) {
-        return (T) queryColumn(sql, DbKit.NULL_PARA_ARRAY);
+        return queryColumn(sql, DbKit.NULL_PARA_ARRAY);
     }
 
     public String queryStr(String sql, Object... paras) {
@@ -527,7 +499,7 @@ public class DbPro {
         }
 
         String totalSql = SqlBuilder.buildTotalSql(sql);
-        int totalRow = ((Number) Db.querySingleValue(config, conn, totalSql, paras)).intValue();
+        int totalRow = Db.queryColumn(config, conn, totalSql, paras);
 
         if (totalRow == 0) {
             return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, 0, 0);

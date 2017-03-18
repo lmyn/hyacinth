@@ -57,18 +57,6 @@ public class Db {
         return DbPro.MAIN.queryFirst(sql);
     }
 
-    static Object querySingleValue(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.querySingleValue(config, conn, sql, paras);
-    }
-
-    public static Object querySingleValue(String sql, Object... paras){
-        return DbPro.MAIN.querySingleValue(sql, paras);
-    }
-
-    public static Object querySingleValue(String sql){
-        return DbPro.MAIN.querySingleValue(sql);
-    }
-
     // 26 queryXxx method below -----------------------------------------------
     /**
      * Execute sql query just return one column.
@@ -77,6 +65,10 @@ public class Db {
      * @param paras the parameters of sql
      * @return <T> T
      */
+    public static <T> T queryColumn(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.queryColumn(config, conn, sql, paras);
+    }
+
     public static <T> T queryColumn(String sql, Object... paras) {
         return DbPro.MAIN.queryColumn(sql, paras);
     }
