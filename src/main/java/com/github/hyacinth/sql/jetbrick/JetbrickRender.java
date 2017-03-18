@@ -1,4 +1,4 @@
-package com.github.hyacinth.sql.jetx;
+package com.github.hyacinth.sql.jetbrick;
 
 import com.github.hyacinth.sql.Render;
 import com.github.hyacinth.sql.SqlBuilder;
@@ -18,9 +18,9 @@ import java.util.Map;
  * Date: 2016/12/29
  * Time: 22:18
  */
-public class JetbrickTemplateRender implements Render {
+public class JetbrickRender implements Render {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(JetbrickTemplateRender.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(JetbrickRender.class);
 
     /**
      * 普通SQL

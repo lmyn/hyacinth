@@ -1,4 +1,4 @@
-package com.github.hyacinth.sql.jetx;
+package com.github.hyacinth.sql.jetbrick;
 
 import com.github.hyacinth.sql.SqlCache;
 import jetbrick.template.JetEngine;
@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
  * Date: 2016/7/30
  * Time: 14:39
  */
-public class JetbrickTemplateCompiler {
+public class JetbrickCompiler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JetbrickTemplateCompiler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JetbrickCompiler.class);
 
     //模板引擎
     private static JetEngine jetEngine = null;

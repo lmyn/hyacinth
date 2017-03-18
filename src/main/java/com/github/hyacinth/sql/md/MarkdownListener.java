@@ -11,7 +11,7 @@ import java.io.File;
  * Date: 2017/3/1
  * Time: 11:09
  */
-public class MdFileListener implements FileAlterationListener {
+public class MarkdownListener implements FileAlterationListener {
     @Override
     public void onStart(FileAlterationObserver observer) {
 

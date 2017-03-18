@@ -1,6 +1,6 @@
 package com.github.hyacinth.sql.md;
 
-import com.github.hyacinth.sql.jetx.JetbrickTemplateCompiler;
+import com.github.hyacinth.sql.jetbrick.JetbrickCompiler;
 import com.github.hyacinth.sql.SqlCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class MdResolve {
                             SqlCache.fixed.put(group + key, buildSql(list));
                         } else {
                             //动态sql交给模板引擎
-                            JetbrickTemplateCompiler.compile(group + key, buildSql(list));
+                            JetbrickCompiler.compile(group + key, buildSql(list));
                         }
                     }
                     //将下一条sqlKey再放入list
