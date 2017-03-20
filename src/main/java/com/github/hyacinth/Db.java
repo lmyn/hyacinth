@@ -23,8 +23,8 @@ public class Db {
         return DbPro.use(configName);
     }
 
-    static <T> List<T> query(Config config, Connection conn, String key, Object... paras) throws SQLException {
-        return DbPro.MAIN.query(config, conn, SqlCache.fixed.get(key), paras);
+    static <T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.query(config, conn, sql, paras);
     }
 
     /**
@@ -77,12 +77,12 @@ public class Db {
     /**
      * Execute sql query just return one column.
      * @param <T> the type of the column that in your sql's select statement
-     * @param key an SQL statement that may contain one or more '?' IN parameter placeholders
+     * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
      * @return <T> T
      */
-    public static <T> T queryColumn(Config config, Connection conn, String key, Object... paras) throws SQLException {
-        return DbPro.MAIN.queryColumn(config, conn, SqlCache.fixed.get(key), paras);
+    static <T> T queryColumn(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.queryColumn(config, conn, sql, paras);
     }
 
     public static <T> T queryColumn(String key, Object... paras) {
@@ -285,8 +285,8 @@ public class Db {
     /**
      * Execute sql update
      */
-    static int update(Config config, Connection conn, String key, Object... paras) throws SQLException {
-        return DbPro.MAIN.update(config, conn, SqlCache.fixed.get(key), paras);
+    static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.update(config, conn, sql, paras);
     }
 
     /**
@@ -315,8 +315,8 @@ public class Db {
         return DbPro.MAIN.update(SqlCache.fixed.get(key));
     }
 
-    static List<Record> find(Config config, Connection conn, String key, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
-        return DbPro.MAIN.find(config, conn, SqlCache.fixed.get(key), paras);
+    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
+        return DbPro.MAIN.find(config, conn, sql, paras);
     }
 
     /**
@@ -340,8 +340,8 @@ public class Db {
         return DbPro.MAIN.find(SqlCache.fixed.get(key));
     }
 
-    public static Record findFirst(Config config, Connection conn, String key, Object... paras) throws SQLException {
-        return DbPro.MAIN.findFirst(config, conn, SqlCache.fixed.get(key), paras);
+    public static Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.findFirst(config, conn, sql, paras);
     }
 
     /**
@@ -452,8 +452,8 @@ public class Db {
         return DbPro.MAIN.delete(tableName, record);
     }
 
-    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String key, Object... paras) throws SQLException {
-        return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, SqlCache.fixed.get(key), paras);
+    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, sql, paras);
     }
 
     /**

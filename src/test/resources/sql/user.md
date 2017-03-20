@@ -42,6 +42,12 @@ selectDate
 > 测试
 
     select end_time from ad where id = #{id}
+    
+*selectDate2*
+-------------
+> 测试2
+
+    select * from ad
         
 
 

@@ -51,7 +51,7 @@ public class SqlBuilder {
             plainSelect.setOrderByElements(null);
             //获取sql分组信息
             List<Expression> groupItems = plainSelect.getGroupByColumnReferences();
-            if(groupItems.size() > 0){
+            if(groupItems != null && !groupItems.isEmpty()){
                 return newTotalSql(select.toString());
             }else{
                 //替换原有SelectItem 为 TotalColumn @a,b,c -> count(*)

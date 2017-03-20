@@ -99,7 +99,7 @@ public class MdResolve {
             sql.append(s).append(lineSeparator);
         }
 
-        return sql.toString();
+        return sql.toString().trim().replaceAll("\\s+", " ");
     }
 
     public static void setCompile(Compile compile) {

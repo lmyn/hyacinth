@@ -502,25 +502,25 @@ public class DbPro {
         }
 
         String totalSql = SqlBuilder.buildTotalSql(sql);
-        int totalRow = Db.queryColumn(config, conn, totalSql, paras);
+        long totalRow = Db.queryColumn(config, conn, totalSql, paras);
 
         if (totalRow == 0) {
             return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, 0, 0);
         }
 
-        int totalPage = totalRow / pageSize;
+        int totalPage = (int) (totalRow / pageSize);
         if (totalRow % pageSize != 0) {
             totalPage++;
         }
 
         if (pageNumber > totalPage) {
-            return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, totalPage, totalRow);
+            return new Page<Record>(new ArrayList<Record>(0), pageNumber, pageSize, totalPage, (int) totalRow);
         }
 
         // --------
         String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
         List<Record> list = find(config, conn, sql, paras);
-        return new Page<Record>(list, pageNumber, pageSize, totalPage, totalRow);
+        return new Page<Record>(list, pageNumber, pageSize, totalPage, (int) totalRow);
     }
 
     /**

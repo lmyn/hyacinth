@@ -1,12 +1,11 @@
 package com.github.hyacinth;
 
+import com.alibaba.fastjson.JSON;
 import com.github.hyacinth.dialect.MysqlDialect;
 import com.github.hyacinth.generator.Generator;
-import com.github.hyacinth.sql.monitor.FileAlterationListener;
-import com.github.hyacinth.sql.monitor.FileAlterationMonitor;
-import com.github.hyacinth.sql.monitor.FileAlterationObserver;
 import com.github.hyacinth.tools.ClassTools;
 import com.github.hyacinth.tools.PathTools;
+import jetbrick.util.JSONUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +13,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Author: luoyong
@@ -86,5 +82,17 @@ public class HyacinthTest {
         paras.put("id", 3);
         Date date = Db.queryColumn("User_SelectDate", paras);
         System.out.println(date);
+    }
+
+    @Test
+    public void test4(){
+        Page<Record> records = Db.paginate(10, 1, "User_SelectDate2");
+        System.out.println(JSON.toJSONString(records));
+    }
+
+    @Test
+    public void test5(){
+        String abc = " efwafewa feawfeaw    feawsdfw dcsaaw fefdaef    eesfe\tfeosl\nfewoisks  \t\n  \tkldkjie\n\n   ewomen";
+        System.out.println(abc.replaceAll("\\s+", " "));
     }
 }
