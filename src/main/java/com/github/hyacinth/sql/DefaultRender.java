@@ -15,7 +15,7 @@ import java.util.Map;
  * Date: 2016/12/29
  * Time: 22:18
  */
-public class DefaultRender implements Render {
+public class DefaultRender implements IRender {
 
     private static Logger LOGGER = LoggerFactory.getLogger(DefaultRender.class);
 

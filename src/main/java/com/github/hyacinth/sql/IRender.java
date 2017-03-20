@@ -9,7 +9,7 @@ import java.util.Map;
  * Date: 2017/2/10
  * Time: 17:30
  */
-public interface Render {
+public interface IRender {
 
     /**
      * sql渲染方法

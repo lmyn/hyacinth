@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * Date: 2016/7/30
  * Time: 14:39
  */
-public class DefaultCompiler implements Compile{
+public class DefaultCompiler implements ICompile {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompiler.class);
 
