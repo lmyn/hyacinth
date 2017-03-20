@@ -1,6 +1,6 @@
 package com.github.hyacinth;
 
-import com.github.hyacinth.sql.SqlBuilder;
+import com.github.hyacinth.sql.BuildKit;
 import com.github.hyacinth.sql.SqlCache;
 
 import java.io.Serializable;
@@ -276,7 +276,7 @@ public abstract class Model<M extends Model> implements Serializable {
 
     public Page<M> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras){
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         Config config = getConfig();
         return doPaginate(config, pageNumber, pageSize, sql, parasValueList.toArray());
     }
@@ -296,7 +296,7 @@ public abstract class Model<M extends Model> implements Serializable {
                 throw new HyacinthException("PageNumber and pageSize must more than 0");
             }
 
-            String totalSql = SqlBuilder.buildTotalSql(sql);
+            String totalSql = BuildKit.buildTotalSql(sql);
             int totalRow = Db.queryColumn(config, conn, totalSql, paras);
 
             if (totalRow == 0) {
@@ -541,7 +541,7 @@ public abstract class Model<M extends Model> implements Serializable {
      */
     public List<M> find(String key, Map<String, Object> paras) {
         List<Object> parasList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasList);
         return find(sql, parasList.toArray());
     }
 

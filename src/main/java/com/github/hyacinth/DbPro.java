@@ -1,6 +1,6 @@
 package com.github.hyacinth;
 
-import com.github.hyacinth.sql.SqlBuilder;
+import com.github.hyacinth.sql.BuildKit;
 import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -501,7 +501,7 @@ public class DbPro {
             throw new HyacinthException("pageNumber and pageSize must more than 0");
         }
 
-        String totalSql = SqlBuilder.buildTotalSql(sql);
+        String totalSql = BuildKit.buildTotalSql(sql);
         long totalRow = Db.queryColumn(config, conn, totalSql, paras);
 
         if (totalRow == 0) {

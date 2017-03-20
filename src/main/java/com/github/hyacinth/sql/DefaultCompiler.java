@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * Date: 2016/7/30
  * Time: 14:39
  */
-public class DefaultCompiler implements ICompile {
+public class DefaultCompiler implements TemplateCompiler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompiler.class);
 
@@ -26,13 +26,13 @@ public class DefaultCompiler implements ICompile {
      * @param template  模板源码
      */
     @Override
-    public void make(String name, String template) {
+    public void compile(String name, String template) {
         //获取引擎对象
         JetEngine jetEngine = getJetEngine();
         //编译模板
         JetTemplate jetTemplate = jetEngine.createTemplate(name, template);
         //将编译后的模板放入缓存
-        SqlCache.sqlTemplate.put(name, jetTemplate);
+        SqlCache.jetbrickTemplate.put(name, jetTemplate);
 //        LOGGER.debug("Compiled sql sql:{} --> \n sql sql: {}", name, template);
     }
 

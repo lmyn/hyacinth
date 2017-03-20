@@ -1,6 +1,6 @@
 package com.github.hyacinth;
 
-import com.github.hyacinth.sql.IRender;
+import com.github.hyacinth.sql.SqlBuilder;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,7 +22,7 @@ public class DbKit {
      */
     static Config config = null;
 
-    static IRender render = null;
+    static SqlBuilder sqlBuilder = null;
 
     /**
      * 1: For ActiveRecordPlugin.useAsDataTransfer(...) 用于分布式场景
@@ -137,7 +137,7 @@ public class DbKit {
         return (Class<? extends Model>) ((modelClass.getName().indexOf("EnhancerByCGLIB") == -1 ? modelClass : modelClass.getSuperclass()));
     }
 
-    public static void setRender(IRender render) {
-        DbKit.render = render;
+    public static void setSqlBuilder(SqlBuilder sqlBuilder) {
+        DbKit.sqlBuilder = sqlBuilder;
     }
 }

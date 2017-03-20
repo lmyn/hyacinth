@@ -1,6 +1,6 @@
 package com.github.hyacinth.sql.markdown;
 
-import com.github.hyacinth.sql.ICompile;
+import com.github.hyacinth.sql.TemplateCompiler;
 import com.github.hyacinth.sql.SqlCache;
 import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class MdResolve {
 
     protected String lineSeparator = System.getProperty("line.separator", "\n");
 
-    private static ICompile compile;
+    private static TemplateCompiler templateCompiler;
 
     /**
      * 解析Markdown模板文件，将文件中的sql id以及对于sql逐条解析并缓存起来
@@ -81,7 +81,7 @@ public class MdResolve {
                 SqlCache.fixed.put(usefulKey, buildSql(list));
             } else {
                 //动态sql交给模板引擎
-                compile.make(usefulKey, buildSql(list));
+                templateCompiler.compile(usefulKey, buildSql(list));
             }
         }
     }
@@ -102,7 +102,7 @@ public class MdResolve {
         return sql.toString().trim().replaceAll("\\s+", " ");
     }
 
-    public static void setCompile(ICompile compile) {
-        MdResolve.compile = compile;
+    public static void setTemplateCompiler(TemplateCompiler templateCompiler) {
+        MdResolve.templateCompiler = templateCompiler;
     }
 }

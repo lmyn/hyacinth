@@ -15,9 +15,9 @@ import java.util.Map;
  * Date: 2016/12/29
  * Time: 22:18
  */
-public class DefaultRender implements IRender {
+public class DefaultBuilder implements SqlBuilder {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(DefaultRender.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(DefaultBuilder.class);
 
     /**
      * 普通SQL
@@ -27,11 +27,11 @@ public class DefaultRender implements IRender {
      * @return SqlParams
      */
     @Override
-    public String make(String key, Map<String, Object> paras, List<Object> parasList) {
+    public String build(String key, Map<String, Object> paras, List<Object> parasList) {
         //模板引擎渲染
         StringBuilder sql = new StringBuilder(jetEngineRender(key, paras));
         //二次渲染
-        SqlBuilder.parameterizedRender(paras, sql, parasList);
+        BuildKit.parameterizedRender(paras, sql, parasList);
 
         return sql.toString();
     }
@@ -46,7 +46,7 @@ public class DefaultRender implements IRender {
     private String jetEngineRender(String key, Map<String, Object> paras) {
         String result;
         //获取模板缓存
-        JetTemplate jetTemplate = SqlCache.sqlTemplate.get(key);
+        JetTemplate jetTemplate = SqlCache.jetbrickTemplate.get(key);
 
         StringWriter stringWriter = new StringWriter();
         if (jetTemplate != null) {

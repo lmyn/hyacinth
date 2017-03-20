@@ -4,7 +4,7 @@ import com.github.hyacinth.*;
 import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.sql.DefaultCompiler;
 import com.github.hyacinth.sql.markdown.MdFileMonitor;
-import com.github.hyacinth.sql.DefaultRender;
+import com.github.hyacinth.sql.DefaultBuilder;
 import com.github.hyacinth.sql.markdown.MdResolve;
 import com.github.hyacinth.tools.StringTools;
 import org.springframework.core.io.Resource;
@@ -86,7 +86,7 @@ public class HyacinthConfiguration {
             config.setDataSource(dataSource);
         }
 
-        MdResolve.setCompile(new DefaultCompiler());
+        MdResolve.setTemplateCompiler(new DefaultCompiler());
         //如果配置上，开启了热加载功能，则启用文件监听进程
         if (isHotLoad) {
             if (this.monitor == null) {
@@ -97,7 +97,7 @@ public class HyacinthConfiguration {
 
         new TableBuilder().build(basePackage, config);
         DbKit.addConfig(config);
-        DbKit.setRender(new DefaultRender());
+        DbKit.setSqlBuilder(new DefaultBuilder());
         isStarted = true;
 
     }

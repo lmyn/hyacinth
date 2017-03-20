@@ -1,13 +1,10 @@
 package com.github.hyacinth;
 
-import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
-import com.alibaba.druid.sql.visitor.SQLASTOutputVisitor;
-import com.alibaba.druid.util.JdbcUtils;
 import com.github.hyacinth.sql.TotalColumn;
-import com.github.hyacinth.sql.SqlBuilder;
+import com.github.hyacinth.sql.BuildKit;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -124,13 +121,13 @@ public class OtherTest {
         Long start,end;
         start = System.currentTimeMillis();
         for(int i = 0; i<1; i++){
-            SqlBuilder.buildTotalSql(sql2);
+            BuildKit.buildTotalSql(sql2);
         }
         end = System.currentTimeMillis();
         System.out.println("JSqlParser:" + (end-start));
 
 
-        System.out.println(SqlBuilder.buildTotalSql(sql2));
+        System.out.println(BuildKit.buildTotalSql(sql2));
     }
 
     @Test

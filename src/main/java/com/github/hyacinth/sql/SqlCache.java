@@ -18,6 +18,6 @@ public class SqlCache {
     public static final Cache<String, String> fixed = new PureCache<String, String>("fixed");
 
     //编译后模板缓存
-    static final Cache<String, JetTemplate> sqlTemplate = new PureCache<String, JetTemplate>("sqlTemplate");
+    static final Cache<String, JetTemplate> jetbrickTemplate = new PureCache<String, JetTemplate>("jetbrick-template");
 
 }

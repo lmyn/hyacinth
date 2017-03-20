@@ -36,7 +36,7 @@ public class Db {
 
     public static <T> List<T> query(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.query(sql, parasValueList.toArray());
     }
 
@@ -61,7 +61,7 @@ public class Db {
 
     public static <T> T queryFirst(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryFirst(sql, parasValueList.toArray());
     }
 
@@ -91,7 +91,7 @@ public class Db {
 
     public static <T> T queryColumn(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryColumn(sql, parasValueList.toArray());
     }
 
@@ -105,7 +105,7 @@ public class Db {
 
     public static String queryStr(String key, Map<String, Object> paras){
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryStr(sql, parasValueList.toArray());
     }
 
@@ -119,7 +119,7 @@ public class Db {
 
     public static Integer queryInt(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryInt(sql, parasValueList.toArray());
     }
 
@@ -133,7 +133,7 @@ public class Db {
 
     public static Long queryLong(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryLong(sql, parasValueList.toArray());
     }
 
@@ -147,7 +147,7 @@ public class Db {
 
     public static Double queryDouble(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryDouble(sql, parasValueList.toArray());
     }
 
@@ -161,7 +161,7 @@ public class Db {
 
     public static Float queryFloat(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryFloat(sql, parasValueList.toArray());
     }
 
@@ -175,7 +175,7 @@ public class Db {
 
     public static java.math.BigDecimal queryBigDecimal(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryBigDecimal(sql, parasValueList.toArray());
     }
 
@@ -189,7 +189,7 @@ public class Db {
 
     public static byte[] queryBytes(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryBytes(sql, parasValueList.toArray());
     }
 
@@ -203,7 +203,7 @@ public class Db {
 
     public static java.util.Date queryDate(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryDate(sql, parasValueList.toArray());
     }
 
@@ -217,7 +217,7 @@ public class Db {
 
     public static java.sql.Time queryTime(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryTime(sql, parasValueList.toArray());
     }
 
@@ -231,7 +231,7 @@ public class Db {
 
     public static java.sql.Timestamp queryTimestamp(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryTimestamp(sql, parasValueList.toArray());
     }
 
@@ -245,7 +245,7 @@ public class Db {
 
     public static Boolean queryBoolean(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryBoolean(sql, parasValueList.toArray());
     }
 
@@ -259,7 +259,7 @@ public class Db {
 
     public static Short queryShort(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryShort(sql, parasValueList.toArray());
     }
 
@@ -273,7 +273,7 @@ public class Db {
 
     public static Number queryNumber(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.queryNumber(sql, parasValueList.toArray());
     }
 
@@ -303,7 +303,7 @@ public class Db {
 
     public static int update(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.update(sql, parasValueList.toArray());
     }
 
@@ -328,7 +328,7 @@ public class Db {
 
     public static List<Record> find(String key, Map<String, Object> paras){
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.find(sql, parasValueList.toArray());
     }
 
@@ -356,7 +356,7 @@ public class Db {
 
     public static Record findFirst(String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.findFirst(sql, parasValueList.toArray());
     }
 
@@ -470,7 +470,7 @@ public class Db {
 
     public static Page<Record> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.render.make(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         return DbPro.MAIN.paginate(pageNumber, pageSize, sql, parasValueList);
     }
 

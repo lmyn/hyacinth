@@ -6,7 +6,7 @@ package com.github.hyacinth.sql;
  * Date: 2017/3/20
  * Time: 10:31
  */
-public interface ICompile {
+public interface TemplateCompiler {
 
-    void make(String key, String template);
+    void compile(String key, String template);
 }
