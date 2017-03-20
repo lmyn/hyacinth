@@ -1,8 +1,5 @@
-package com.github.hyacinth.sql.jetbrick;
+package com.github.hyacinth.sql;
 
-import com.github.hyacinth.sql.Render;
-import com.github.hyacinth.sql.SqlBuilder;
-import com.github.hyacinth.sql.SqlCache;
 import jetbrick.template.JetTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +27,7 @@ public class JetbrickRender implements Render {
      * @return SqlParams
      */
     @Override
-    public String render(String key, Map<String, Object> paras, List<Object> parasList) {
+    public String make(String key, Map<String, Object> paras, List<Object> parasList) {
         //模板引擎渲染
         StringBuilder sql = new StringBuilder(jetEngineRender(key, paras));
         //二次渲染

@@ -118,7 +118,7 @@ public class SqlBuilder {
     }
 
     private static String newTotalSql(String sql){
-        return new StringBuilder("SELECT COUNT(*) AS COUNT FROM (").append(sql).append(") hyacinth_alias0").toString();
+        return new StringBuilder("SELECT COUNT(*) AS total FROM (").append(sql).append(") hyacinth_alias0").toString();
     }
 
     /**

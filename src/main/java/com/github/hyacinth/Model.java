@@ -274,6 +274,20 @@ public abstract class Model<M extends Model> implements Serializable {
         return doPaginate(config, pageNumber, pageSize, sql, paras);
     }
 
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras){
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        Config config = getConfig();
+        return doPaginate(config, pageNumber, pageSize, sql, parasValueList.toArray());
+    }
+
+    /**
+     * @see #paginate(int, int, String, Object...)
+     */
+    public Page<M> paginate(int pageNumber, int pageSize, String key) {
+        return paginate(pageNumber, pageSize, key, DbKit.NULL_PARA_ARRAY);
+    }
+
     private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Object... paras) {
         Connection conn = null;
         try {
@@ -308,13 +322,6 @@ public abstract class Model<M extends Model> implements Serializable {
         } finally {
             config.close(conn);
         }
-    }
-
-    /**
-     * @see #paginate(int, int, String, Object...)
-     */
-    public Page<M> paginate(int pageNumber, int pageSize, String sql) {
-        return paginate(pageNumber, pageSize, sql, DbKit.NULL_PARA_ARRAY);
     }
 
     /**
@@ -534,7 +541,7 @@ public abstract class Model<M extends Model> implements Serializable {
      */
     public List<M> find(String key, Map<String, Object> paras) {
         List<Object> parasList = new ArrayList<Object>();
-        String sql = DbKit.render.render(key, paras, parasList);
+        String sql = DbKit.render.make(key, paras, parasList);
         return find(sql, parasList.toArray());
     }
 

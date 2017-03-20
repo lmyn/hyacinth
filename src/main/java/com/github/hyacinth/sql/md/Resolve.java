@@ -1,6 +1,6 @@
 package com.github.hyacinth.sql.md;
 
-import com.github.hyacinth.sql.jetbrick.JetbrickCompiler;
+import com.github.hyacinth.sql.Compile;
 import com.github.hyacinth.sql.SqlCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,8 @@ public class Resolve {
     private static final Logger LOGGER = LoggerFactory.getLogger(Resolve.class);
 
     protected String lineSeparator = System.getProperty("line.separator", "\n");
+
+    private static Compile compile;
 
     /**
      * 解析Markdown模板文件，将文件中的sql id以及对于sql逐条解析并缓存起来
@@ -50,7 +52,7 @@ public class Resolve {
                             SqlCache.fixed.put(group + key, buildSql(list));
                         } else {
                             //动态sql交给模板引擎
-                            JetbrickCompiler.compile(group + key, buildSql(list));
+                            compile.make(group + key, buildSql(list));
                         }
                     }
                     //将下一条sqlKey再放入list
@@ -93,4 +95,7 @@ public class Resolve {
         return sql.toString();
     }
 
+    public static void setCompile(Compile compile) {
+        Resolve.compile = compile;
+    }
 }

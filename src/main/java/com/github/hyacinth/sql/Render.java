@@ -19,6 +19,6 @@ public interface Render {
      * @param parasList 参数化列表，原模板中的参数表达式 将采用 ? 代替
      * @return
      */
-    String render(String key, Map<String, Object> paras, List<Object> parasList);
+    String make(String key, Map<String, Object> paras, List<Object> parasList);
 
 }

@@ -1,8 +1,12 @@
 package com.github.hyacinth;
 
+import com.github.hyacinth.sql.SqlCache;
+
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Author: luoyong
@@ -19,235 +23,349 @@ public class Db {
         return DbPro.use(configName);
     }
 
-    static <T> List<T> query(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.query(config, conn, sql, paras);
+    static <T> List<T> query(Config config, Connection conn, String key, Object... paras) throws SQLException {
+        return DbPro.MAIN.query(config, conn, SqlCache.fixed.get(key), paras);
     }
 
     /**
      * @see #query(String, Object...)
      */
-    public static <T> List<T> query(String sql, Object... paras) {
-        return DbPro.MAIN.query(sql, paras);
+    public static <T> List<T> query(String key, Object... paras) {
+        return DbPro.MAIN.query(SqlCache.fixed.get(key), paras);
+    }
+
+    public static <T> List<T> query(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.query(sql, parasValueList.toArray());
     }
 
     /**
      * @see #query(String, Object...)
-     * @param sql an SQL statement
+     * @param key an SQL statement
      */
-    public static <T> List<T> query(String sql) {
-        return DbPro.MAIN.query(sql);
+    public static <T> List<T> query(String key) {
+        return DbPro.MAIN.query(SqlCache.fixed.get(key));
     }
 
     /**
      * Execute sql query and return the first result. I recommend add "limit 1" in your sql.
-     * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+     * @param key an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
      * @return Object[] if your sql has select more than one column,
      * 			and it return Object if your sql has select only one column.
      */
-    public static <T> T queryFirst(String sql, Object... paras) {
-        return DbPro.MAIN.queryFirst(sql, paras);
+    public static <T> T queryFirst(String key, Object... paras) {
+        return DbPro.MAIN.queryFirst(SqlCache.fixed.get(key), paras);
+    }
+
+    public static <T> T queryFirst(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryFirst(sql, parasValueList.toArray());
     }
 
     /**
      * @see #queryFirst(String, Object...)
-     * @param sql an SQL statement
+     * @param key an SQL statement
      */
-    public static <T> T queryFirst(String sql) {
-        return DbPro.MAIN.queryFirst(sql);
+    public static <T> T queryFirst(String key) {
+        return DbPro.MAIN.queryFirst(key);
     }
 
     // 26 queryXxx method below -----------------------------------------------
     /**
      * Execute sql query just return one column.
      * @param <T> the type of the column that in your sql's select statement
-     * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+     * @param key an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
      * @return <T> T
      */
-    public static <T> T queryColumn(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.queryColumn(config, conn, sql, paras);
+    public static <T> T queryColumn(Config config, Connection conn, String key, Object... paras) throws SQLException {
+        return DbPro.MAIN.queryColumn(config, conn, SqlCache.fixed.get(key), paras);
     }
 
-    public static <T> T queryColumn(String sql, Object... paras) {
-        return DbPro.MAIN.queryColumn(sql, paras);
+    public static <T> T queryColumn(String key, Object... paras) {
+        return DbPro.MAIN.queryColumn(SqlCache.fixed.get(key), paras);
     }
 
-    public static <T> T queryColumn(String sql) {
-        return DbPro.MAIN.queryColumn(sql);
+    public static <T> T queryColumn(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryColumn(sql, parasValueList.toArray());
     }
 
-    public static String queryStr(String sql, Object... paras) {
-        return DbPro.MAIN.queryStr(sql, paras);
+    public static <T> T queryColumn(String key) {
+        return DbPro.MAIN.queryColumn(key);
     }
 
-    public static String queryStr(String sql) {
-        return DbPro.MAIN.queryStr(sql);
+    public static String queryStr(String key, Object... paras) {
+        return DbPro.MAIN.queryStr(SqlCache.fixed.get(key), paras);
     }
 
-    public static Integer queryInt(String sql, Object... paras) {
-        return DbPro.MAIN.queryInt(sql, paras);
+    public static String queryStr(String key, Map<String, Object> paras){
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryStr(sql, parasValueList.toArray());
     }
 
-    public static Integer queryInt(String sql) {
-        return DbPro.MAIN.queryInt(sql);
+    public static String queryStr(String key) {
+        return DbPro.MAIN.queryStr(SqlCache.fixed.get(key));
     }
 
-    public static Long queryLong(String sql, Object... paras) {
-        return DbPro.MAIN.queryLong(sql, paras);
+    public static Integer queryInt(String key, Object... paras) {
+        return DbPro.MAIN.queryInt(SqlCache.fixed.get(key), paras);
     }
 
-    public static Long queryLong(String sql) {
-        return DbPro.MAIN.queryLong(sql);
+    public static Integer queryInt(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryInt(sql, parasValueList.toArray());
     }
 
-    public static Double queryDouble(String sql, Object... paras) {
-        return DbPro.MAIN.queryDouble(sql, paras);
+    public static Integer queryInt(String key) {
+        return DbPro.MAIN.queryInt(SqlCache.fixed.get(key));
     }
 
-    public static Double queryDouble(String sql) {
-        return DbPro.MAIN.queryDouble(sql);
+    public static Long queryLong(String key, Object... paras) {
+        return DbPro.MAIN.queryLong(SqlCache.fixed.get(key), paras);
     }
 
-    public static Float queryFloat(String sql, Object... paras) {
-        return DbPro.MAIN.queryFloat(sql, paras);
+    public static Long queryLong(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryLong(sql, parasValueList.toArray());
     }
 
-    public static Float queryFloat(String sql) {
-        return DbPro.MAIN.queryFloat(sql);
+    public static Long queryLong(String key) {
+        return DbPro.MAIN.queryLong(SqlCache.fixed.get(key));
     }
 
-    public static java.math.BigDecimal queryBigDecimal(String sql, Object... paras) {
-        return DbPro.MAIN.queryBigDecimal(sql, paras);
+    public static Double queryDouble(String key, Object... paras) {
+        return DbPro.MAIN.queryDouble(SqlCache.fixed.get(key), paras);
     }
 
-    public static java.math.BigDecimal queryBigDecimal(String sql) {
-        return DbPro.MAIN.queryBigDecimal(sql);
+    public static Double queryDouble(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryDouble(sql, parasValueList.toArray());
     }
 
-    public static byte[] queryBytes(String sql, Object... paras) {
-        return DbPro.MAIN.queryBytes(sql, paras);
+    public static Double queryDouble(String key) {
+        return DbPro.MAIN.queryDouble(SqlCache.fixed.get(key));
     }
 
-    public static byte[] queryBytes(String sql) {
-        return DbPro.MAIN.queryBytes(sql);
+    public static Float queryFloat(String key, Object... paras) {
+        return DbPro.MAIN.queryFloat(SqlCache.fixed.get(key), paras);
     }
 
-    public static java.util.Date queryDate(String sql, Object... paras) {
-        return DbPro.MAIN.queryDate(sql, paras);
+    public static Float queryFloat(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryFloat(sql, parasValueList.toArray());
     }
 
-    public static java.util.Date queryDate(String sql) {
-        return DbPro.MAIN.queryDate(sql);
+    public static Float queryFloat(String key) {
+        return DbPro.MAIN.queryFloat(SqlCache.fixed.get(key));
     }
 
-    public static java.sql.Time queryTime(String sql, Object... paras) {
-        return DbPro.MAIN.queryTime(sql, paras);
+    public static java.math.BigDecimal queryBigDecimal(String key, Object... paras) {
+        return DbPro.MAIN.queryBigDecimal(SqlCache.fixed.get(key), paras);
     }
 
-    public static java.sql.Time queryTime(String sql) {
-        return DbPro.MAIN.queryTime(sql);
+    public static java.math.BigDecimal queryBigDecimal(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryBigDecimal(sql, parasValueList.toArray());
     }
 
-    public static java.sql.Timestamp queryTimestamp(String sql, Object... paras) {
-        return DbPro.MAIN.queryTimestamp(sql, paras);
+    public static java.math.BigDecimal queryBigDecimal(String key) {
+        return DbPro.MAIN.queryBigDecimal(SqlCache.fixed.get(key));
     }
 
-    public static java.sql.Timestamp queryTimestamp(String sql) {
-        return DbPro.MAIN.queryTimestamp(sql);
+    public static byte[] queryBytes(String key, Object... paras) {
+        return DbPro.MAIN.queryBytes(SqlCache.fixed.get(key), paras);
     }
 
-    public static Boolean queryBoolean(String sql, Object... paras) {
-        return DbPro.MAIN.queryBoolean(sql, paras);
+    public static byte[] queryBytes(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryBytes(sql, parasValueList.toArray());
     }
 
-    public static Boolean queryBoolean(String sql) {
-        return DbPro.MAIN.queryBoolean(sql);
+    public static byte[] queryBytes(String key) {
+        return DbPro.MAIN.queryBytes(SqlCache.fixed.get(key));
     }
 
-    public static Short queryShort(String sql, Object... paras) {
-        return DbPro.MAIN.queryShort(sql, paras);
+    public static java.util.Date queryDate(String key, Object... paras) {
+        return DbPro.MAIN.queryDate(SqlCache.fixed.get(key), paras);
     }
 
-    public static Short queryShort(String sql) {
-        return DbPro.MAIN.queryShort(sql);
+    public static java.util.Date queryDate(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryDate(sql, parasValueList.toArray());
     }
 
-    public static Number queryNumber(String sql, Object... paras) {
-        return DbPro.MAIN.queryNumber(sql, paras);
+    public static java.util.Date queryDate(String key) {
+        return DbPro.MAIN.queryDate(SqlCache.fixed.get(key));
     }
 
-    public static Number queryNumber(String sql) {
-        return DbPro.MAIN.queryNumber(sql);
+    public static java.sql.Time queryTime(String key, Object... paras) {
+        return DbPro.MAIN.queryTime(SqlCache.fixed.get(key), paras);
+    }
+
+    public static java.sql.Time queryTime(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryTime(sql, parasValueList.toArray());
+    }
+
+    public static java.sql.Time queryTime(String key) {
+        return DbPro.MAIN.queryTime(SqlCache.fixed.get(key));
+    }
+
+    public static java.sql.Timestamp queryTimestamp(String key, Object... paras) {
+        return DbPro.MAIN.queryTimestamp(SqlCache.fixed.get(key), paras);
+    }
+
+    public static java.sql.Timestamp queryTimestamp(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryTimestamp(sql, parasValueList.toArray());
+    }
+
+    public static java.sql.Timestamp queryTimestamp(String key) {
+        return DbPro.MAIN.queryTimestamp(SqlCache.fixed.get(key));
+    }
+
+    public static Boolean queryBoolean(String key, Object... paras) {
+        return DbPro.MAIN.queryBoolean(SqlCache.fixed.get(key), paras);
+    }
+
+    public static Boolean queryBoolean(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryBoolean(sql, parasValueList.toArray());
+    }
+
+    public static Boolean queryBoolean(String key) {
+        return DbPro.MAIN.queryBoolean(SqlCache.fixed.get(key));
+    }
+
+    public static Short queryShort(String key, Object... paras) {
+        return DbPro.MAIN.queryShort(SqlCache.fixed.get(key), paras);
+    }
+
+    public static Short queryShort(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryShort(sql, parasValueList.toArray());
+    }
+
+    public static Short queryShort(String key) {
+        return DbPro.MAIN.queryShort(SqlCache.fixed.get(key));
+    }
+
+    public static Number queryNumber(String key, Object... paras) {
+        return DbPro.MAIN.queryNumber(SqlCache.fixed.get(key), paras);
+    }
+
+    public static Number queryNumber(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.queryNumber(sql, parasValueList.toArray());
+    }
+
+    public static Number queryNumber(String key) {
+        return DbPro.MAIN.queryNumber(SqlCache.fixed.get(key));
     }
     // 26 queryXxx method under -----------------------------------------------
 
     /**
      * Execute sql update
      */
-    static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.update(config, conn, sql, paras);
+    static int update(Config config, Connection conn, String key, Object... paras) throws SQLException {
+        return DbPro.MAIN.update(config, conn, SqlCache.fixed.get(key), paras);
     }
 
     /**
      * Execute update, insert or delete sql statement.
-     * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+     * @param key an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
      * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>,
      *         or <code>DELETE</code> statements, or 0 for SQL statements
      *         that return nothing
      */
-    public static int update(String sql, Object... paras) {
-        return DbPro.MAIN.update(sql, paras);
+    public static int update(String key, Object... paras) {
+        return DbPro.MAIN.update(SqlCache.fixed.get(key), paras);
+    }
+
+    public static int update(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.update(sql, parasValueList.toArray());
     }
 
     /**
      * @see #update(String, Object...)
-     * @param sql an SQL statement
+     * @param key an SQL statement
      */
-    public static int update(String sql) {
-        return DbPro.MAIN.update(sql);
+    public static int update(String key) {
+        return DbPro.MAIN.update(SqlCache.fixed.get(key));
     }
 
-    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
-        return DbPro.MAIN.find(config, conn, sql, paras);
+    static List<Record> find(Config config, Connection conn, String key, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
+        return DbPro.MAIN.find(config, conn, SqlCache.fixed.get(key), paras);
     }
 
     /**
      * @see #find(String, Object...)
      */
-    public static List<Record> find(String sql, Object... paras) {
-        return DbPro.MAIN.find(sql, paras);
+    public static List<Record> find(String key, Object... paras) {
+        return DbPro.MAIN.find(SqlCache.fixed.get(key), paras);
+    }
+
+    public static List<Record> find(String key, Map<String, Object> paras){
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.find(sql, parasValueList.toArray());
     }
 
     /**
      * @see #find(String)
-     * @param sql the sql statement
+     * @param key the sql statement
      */
-    public static List<Record> find(String sql) {
-        return DbPro.MAIN.find(sql);
+    public static List<Record> find(String key) {
+        return DbPro.MAIN.find(SqlCache.fixed.get(key));
     }
 
-    public static Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.findFirst(config, conn, sql, paras);
+    public static Record findFirst(Config config, Connection conn, String key, Object... paras) throws SQLException {
+        return DbPro.MAIN.findFirst(config, conn, SqlCache.fixed.get(key), paras);
     }
 
     /**
      * Find first record. I recommend add "limit 1" in your sql.
-     * @param sql an SQL statement that may contain one or more '?' IN parameter placeholders
+     * @param key an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
      * @return the Record object
      */
-    public static Record findFirst(String sql, Object... paras) {
-        return DbPro.MAIN.findFirst(sql, paras);
+    public static Record findFirst(String key, Object... paras) {
+        return DbPro.MAIN.findFirst(SqlCache.fixed.get(key), paras);
+    }
+
+    public static Record findFirst(String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.findFirst(sql, parasValueList.toArray());
     }
 
     /**
      * @see #findFirst(String, Object...)
-     * @param sql an SQL statement
+     * @param key an SQL statement
      */
-    public static Record findFirst(String sql) {
-        return DbPro.MAIN.findFirst(sql);
+    public static Record findFirst(String key) {
+        return DbPro.MAIN.findFirst(SqlCache.fixed.get(key));
     }
 
     /**
@@ -334,27 +452,33 @@ public class Db {
         return DbPro.MAIN.delete(tableName, record);
     }
 
-    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, sql, paras);
+    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String key, Object... paras) throws SQLException {
+        return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, SqlCache.fixed.get(key), paras);
     }
 
     /**
      * Paginate.
      * @param pageNumber the page number
      * @param pageSize the page size
-     * @param sql sql statement
+     * @param key sql statement
      * @param paras the parameters of sql
      * @return the Page object
      */
-    public static Page<Record> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
-        return DbPro.MAIN.paginate(pageNumber, pageSize, sql, paras);
+    public static Page<Record> paginate(int pageNumber, int pageSize, String key, Object... paras) {
+        return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(key), paras);
+    }
+
+    public static Page<Record> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras) {
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.render.make(key, paras, parasValueList);
+        return DbPro.MAIN.paginate(pageNumber, pageSize, sql, parasValueList);
     }
 
     /**
      * @see #paginate(int, int, String, Object...)
      */
-    public static Page<Record> paginate(int pageNumber, int pageSize, String sql) {
-        return DbPro.MAIN.paginate(pageNumber, pageSize, sql);
+    public static Page<Record> paginate(int pageNumber, int pageSize, String key) {
+        return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(key));
     }
 
     static boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
@@ -416,15 +540,15 @@ public class Db {
     /**
      * @see DbPro#batch(String, Object[][], int)
      */
-    public static int[] batch(String sql, Object[][] paras, int batchSize) {
-        return DbPro.MAIN.batch(sql, paras, batchSize);
+    public static int[] batch(String key, Object[][] paras, int batchSize) {
+        return DbPro.MAIN.batch(SqlCache.fixed.get(key), paras, batchSize);
     }
 
     /**
      * @see DbPro#batch(String, String, List, int)
      */
-    public static int[] batch(String sql, String columns, List modelOrRecordList, int batchSize) {
-        return DbPro.MAIN.batch(sql, columns, modelOrRecordList, batchSize);
+    public static int[] batch(String key, String columns, List modelOrRecordList, int batchSize) {
+        return DbPro.MAIN.batch(SqlCache.fixed.get(key), columns, modelOrRecordList, batchSize);
     }
 
     /**

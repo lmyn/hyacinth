@@ -16,7 +16,7 @@ public class TotalColumn implements SelectItem {
 
     @Override
     public String toString() {
-        return "COUNT(*) AS COUNT";
+        return "COUNT(*) AS total";
     }
 
     @Override

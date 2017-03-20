@@ -1,6 +1,5 @@
-package com.github.hyacinth.sql.jetbrick;
+package com.github.hyacinth.sql;
 
-import com.github.hyacinth.sql.SqlCache;
 import jetbrick.template.JetEngine;
 import jetbrick.template.JetTemplate;
 import org.slf4j.Logger;
@@ -14,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * Date: 2016/7/30
  * Time: 14:39
  */
-public class JetbrickCompiler {
+public class JetbrickCompiler implements Compile{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JetbrickCompiler.class);
 
@@ -26,7 +25,8 @@ public class JetbrickCompiler {
      * @param name      模板缓存标识
      * @param template  模板源码
      */
-    public static void compile(String name, String template) {
+    @Override
+    public void make(String name, String template) {
         //获取引擎对象
         JetEngine jetEngine = getJetEngine();
         //编译模板

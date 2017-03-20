@@ -3,7 +3,9 @@ package com.github.hyacinth.support.spring;
 import com.github.hyacinth.*;
 import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.sql.FileMonitor;
-import com.github.hyacinth.sql.jetbrick.JetbrickRender;
+import com.github.hyacinth.sql.JetbrickCompiler;
+import com.github.hyacinth.sql.JetbrickRender;
+import com.github.hyacinth.sql.md.Resolve;
 import com.github.hyacinth.tools.StringTools;
 import org.springframework.core.io.Resource;
 
@@ -94,7 +96,8 @@ public class HyacinthConfiguration {
 
         new TableBuilder().build(basePackage, config);
         DbKit.addConfig(config);
-        DbKit.addRender(new JetbrickRender());
+        DbKit.setRender(new JetbrickRender());
+        Resolve.setCompile(new JetbrickCompiler());
         isStarted = true;
 
     }

@@ -1,5 +1,11 @@
 package com.github.hyacinth;
 
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.druid.sql.ast.statement.*;
+import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
+import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
+import com.alibaba.druid.sql.visitor.SQLASTOutputVisitor;
+import com.alibaba.druid.util.JdbcUtils;
 import com.github.hyacinth.sql.TotalColumn;
 import com.github.hyacinth.sql.SqlBuilder;
 import net.sf.jsqlparser.JSQLParserException;
@@ -108,16 +114,23 @@ public class OtherTest {
     @Test
     public void test6(){
         String sql = "select sex from student group by sex order by sex";
+        String sql2 = "select a, " +
+                "b,  " +
+                "c, " +
+                "(select name from table2 t2 where t2.d = t1.d) as d " +
+                "from table1 t1 where a = ? " +
+                "group by a,b,c " +
+                "order by b desc";
         Long start,end;
         start = System.currentTimeMillis();
         for(int i = 0; i<1; i++){
-            SqlBuilder.buildTotalSql(sql);
+            SqlBuilder.buildTotalSql(sql2);
         }
         end = System.currentTimeMillis();
         System.out.println("JSqlParser:" + (end-start));
 
 
-        System.out.println(SqlBuilder.buildTotalSql(sql));
+        System.out.println(SqlBuilder.buildTotalSql(sql2));
     }
 
     @Test
@@ -145,6 +158,60 @@ public class OtherTest {
 
         count_sql = "select count(*) " + count_sql;
         return count_sql;
+
+
+    }
+
+    @Test
+    public void test8(){
+
+        String sql = " select eventId,eventKey,eventName,flag from event where eventId = ? and eventKey = ? and eventName = ?";
+        String sql2 = "select a, b,  c, (select name from table2 t2 where t2.d = t1.d) as d from table1 t1 where a = ? group by a,b,c order by b desc";
+        String sql3 = "(select * from ad where sort = 12)\n" +
+                "union\n" +
+                "(select * from ad where sort = 10)\n" +
+                "\n" +
+                "order by id asc";
+        long start, end;
+        start = System.currentTimeMillis();
+        //使用mysql解析
+        MySqlStatementParser sqlStatementParser = new MySqlStatementParser(sql2) ;
+        //解析select查询
+        SQLSelectStatement sqlStatement = (SQLSelectStatement) sqlStatementParser.parseSelect();
+        SQLSelect sqlSelect = sqlStatement.getSelect() ;
+
+        //获取sql查询块
+        MySqlSelectQueryBlock sqlSelectQuery = (MySqlSelectQueryBlock) sqlSelect.getQuery();
+        sqlSelectQuery.setOrderBy(null);
+        sqlStatement.toString();
+
+        end = System.currentTimeMillis();
+        System.out.println(end - start);
+
+//        StringBuffer out = new StringBuffer() ;
+        //创建sql解析的标准化输出
+//        SQLASTOutputVisitor sqlastOutputVisitor = SQLUtils.createFormatOutputVisitor(out , null , JdbcUtils.MYSQL) ;
+//
+//        //解析select项
+//        out.delete(0, out.length()) ;
+//        for (SQLSelectItem sqlSelectItem : sqlSelectQuery.getSelectList()) {
+//            if(out.length()>1){
+//                out.append(",") ;
+//            }
+//            sqlSelectItem.accept(sqlastOutputVisitor);
+//        }
+//        System.out.println("SELECT "+out) ;
+//
+//        //解析from
+//        out.delete(0, out.length()) ;
+//        sqlSelectQuery.getFrom().accept(sqlastOutputVisitor) ;
+//        System.out.println("FROM "+out) ;
+//
+//        //解析where
+//        out.delete(0, out.length()) ;
+//        sqlSelectQuery.getWhere().accept(sqlastOutputVisitor) ;
+//        System.out.println("WHERE "+out);
+
 
 
     }

@@ -137,7 +137,7 @@ public class DbKit {
         return (Class<? extends Model>) ((modelClass.getName().indexOf("EnhancerByCGLIB") == -1 ? modelClass : modelClass.getSuperclass()));
     }
 
-    public static void addRender(Render render) {
+    public static void setRender(Render render) {
         DbKit.render = render;
     }
 }

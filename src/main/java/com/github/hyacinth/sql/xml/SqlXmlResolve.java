@@ -1,6 +1,5 @@
 package com.github.hyacinth.sql.xml;
 
-import com.github.hyacinth.sql.jetbrick.JetbrickCompiler;
 import com.github.hyacinth.sql.SqlCache;
 import com.github.hyacinth.sql.xml.structure.SqlGroup;
 import com.github.hyacinth.sql.xml.structure.SqlItem;
@@ -106,7 +105,7 @@ public class SqlXmlResolve {
             }
             String sql = sqlItem.value;
             if (isStableSql(sqlItem.stable, sqlKey, sql)) return;
-            JetbrickCompiler.compile(sqlKey, sql);
+//            JetbrickCompiler.compile(sqlKey, sql);
             keys.add(sqlKey);
             logger.debug("added sqlKey:{}", sqlKey);
         }
