@@ -1,6 +1,5 @@
-package com.github.hyacinth.sql;
+package com.github.hyacinth.sql.markdown;
 
-import com.github.hyacinth.sql.md.MarkdownListener;
 import com.github.hyacinth.sql.monitor.FileAlterationMonitor;
 import com.github.hyacinth.sql.monitor.FileAlterationObserver;
 import com.github.hyacinth.tools.StringTools;
@@ -16,9 +15,9 @@ import java.util.List;
  * Date: 2017/3/2
  * Time: 9:06
  */
-public class FileMonitor {
+public class MdFileMonitor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileMonitor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MdFileMonitor.class);
 
     //创建文件变化监听器
     private List<FileAlterationMonitor> monitors;
@@ -29,7 +28,7 @@ public class FileMonitor {
         }
         // 创建一个文件观察器用于处理文件的格式
         FileAlterationObserver observer = new FileAlterationObserver(filePath);
-        observer.addListener(new MarkdownListener());
+        observer.addListener(new MdFileListener());
         FileAlterationMonitor monitor = new FileAlterationMonitor(interval, observer);
         if (monitors == null) {
             this.monitors = new ArrayList<FileAlterationMonitor>();

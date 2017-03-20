@@ -105,7 +105,7 @@ public class SqlXmlResolve {
             }
             String sql = sqlItem.value;
             if (isStableSql(sqlItem.stable, sqlKey, sql)) return;
-//            JetbrickCompiler.compile(sqlKey, sql);
+//            DefaultCompiler.compile(sqlKey, sql);
             keys.add(sqlKey);
             logger.debug("added sqlKey:{}", sqlKey);
         }

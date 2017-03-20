@@ -15,9 +15,9 @@ import java.util.Map;
  * Date: 2016/12/29
  * Time: 22:18
  */
-public class JetbrickRender implements Render {
+public class DefaultRender implements Render {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(JetbrickRender.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(DefaultRender.class);
 
     /**
      * 普通SQL

@@ -1,4 +1,4 @@
-package com.github.hyacinth.sql.md;
+package com.github.hyacinth.sql.markdown;
 
 import com.github.hyacinth.sql.Compile;
 import com.github.hyacinth.sql.SqlCache;
@@ -14,9 +14,9 @@ import java.util.LinkedList;
  * Date: 2017/2/9
  * Time: 9:33
  */
-public class Resolve {
+public class MdResolve {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Resolve.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MdResolve.class);
 
     protected String lineSeparator = System.getProperty("line.separator", "\n");
 
@@ -96,6 +96,6 @@ public class Resolve {
     }
 
     public static void setCompile(Compile compile) {
-        Resolve.compile = compile;
+        MdResolve.compile = compile;
     }
 }

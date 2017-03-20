@@ -1,7 +1,9 @@
-package com.github.hyacinth.sql.md;
+package com.github.hyacinth.sql.markdown;
 
 import com.github.hyacinth.sql.monitor.FileAlterationListener;
 import com.github.hyacinth.sql.monitor.FileAlterationObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -11,10 +13,13 @@ import java.io.File;
  * Date: 2017/3/1
  * Time: 11:09
  */
-public class MarkdownListener implements FileAlterationListener {
+public class MdFileListener implements FileAlterationListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileAlterationListener.class);
+
     @Override
     public void onStart(FileAlterationObserver observer) {
-
+        LOGGER.info("正在监控：{}", observer.getDirectory().getAbsolutePath());
     }
 
     @Override
@@ -34,12 +39,16 @@ public class MarkdownListener implements FileAlterationListener {
 
     @Override
     public void onFileCreate(File file) {
-
+        MdResolve resolve = new MdResolve();
+        resolve.resolve(file);
+        LOGGER.info("已重新加载文件：", file);
     }
 
     @Override
     public void onFileChange(File file) {
-
+        MdResolve resolve = new MdResolve();
+        resolve.resolve(file);
+        LOGGER.info("已重新加载文件：", file);
     }
 
     @Override
@@ -49,6 +58,10 @@ public class MarkdownListener implements FileAlterationListener {
 
     @Override
     public void onStop(FileAlterationObserver observer) {
-
+        try {
+            observer.destroy();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 }

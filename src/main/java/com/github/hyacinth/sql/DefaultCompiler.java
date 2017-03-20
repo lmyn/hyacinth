@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory;
  * Date: 2016/7/30
  * Time: 14:39
  */
-public class JetbrickCompiler implements Compile{
+public class DefaultCompiler implements Compile{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JetbrickCompiler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompiler.class);
 
     //模板引擎
     private static JetEngine jetEngine = null;

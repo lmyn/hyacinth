@@ -2,10 +2,10 @@ package com.github.hyacinth.support.spring;
 
 import com.github.hyacinth.*;
 import com.github.hyacinth.dialect.Dialect;
-import com.github.hyacinth.sql.FileMonitor;
-import com.github.hyacinth.sql.JetbrickCompiler;
-import com.github.hyacinth.sql.JetbrickRender;
-import com.github.hyacinth.sql.md.Resolve;
+import com.github.hyacinth.sql.DefaultCompiler;
+import com.github.hyacinth.sql.markdown.MdFileMonitor;
+import com.github.hyacinth.sql.DefaultRender;
+import com.github.hyacinth.sql.markdown.MdResolve;
 import com.github.hyacinth.tools.StringTools;
 import org.springframework.core.io.Resource;
 
@@ -42,7 +42,7 @@ public class HyacinthConfiguration {
 
     private boolean isStarted = false;
 
-    private FileMonitor monitor;
+    private MdFileMonitor monitor;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -89,15 +89,15 @@ public class HyacinthConfiguration {
         //如果配置上，开启了热加载功能，则启用文件监听进程
         if (isHotLoad) {
             if (this.monitor == null) {
-                this.monitor = new FileMonitor();
+                this.monitor = new MdFileMonitor();
             }
             startHotLoad();
         }
 
         new TableBuilder().build(basePackage, config);
         DbKit.addConfig(config);
-        DbKit.setRender(new JetbrickRender());
-        Resolve.setCompile(new JetbrickCompiler());
+        DbKit.setRender(new DefaultRender());
+        MdResolve.setCompile(new DefaultCompiler());
         isStarted = true;
 
     }
