@@ -36,6 +36,13 @@ selectUser22
     select {selectUser} from user = fewafewa323232
         select 2
         
+        
+selectDate
+-------------
+> 测试
+
+    select end_time from ad where id = #{id}
+        
 
 
 	

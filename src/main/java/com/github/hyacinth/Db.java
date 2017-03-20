@@ -96,7 +96,7 @@ public class Db {
     }
 
     public static <T> T queryColumn(String key) {
-        return DbPro.MAIN.queryColumn(key);
+        return DbPro.MAIN.queryColumn(SqlCache.fixed.get(key));
     }
 
     public static String queryStr(String key, Object... paras) {

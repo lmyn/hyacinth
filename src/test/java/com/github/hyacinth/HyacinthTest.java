@@ -14,6 +14,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -79,6 +82,9 @@ public class HyacinthTest {
 
     @Test
     public void test3(){
-
+        Map<String, Object> paras = new HashMap<String, Object>();
+        paras.put("id", 3);
+        Date date = Db.queryColumn("User_SelectDate", paras);
+        System.out.println(date);
     }
 }

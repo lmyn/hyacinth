@@ -2,6 +2,7 @@ package com.github.hyacinth.sql.markdown;
 
 import com.github.hyacinth.sql.Compile;
 import com.github.hyacinth.sql.SqlCache;
+import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +30,14 @@ public class MdResolve {
      */
     public void resolve(File file) {
         //获取文件名称当做sql组名
-        String group = file.getName().substring(0, file.getName().lastIndexOf(".") + 1);
+        String group = file.getName().substring(0, file.getName().lastIndexOf("."));
         //用于存储文本文件中的sql
         LinkedList<String> list = new LinkedList<String>();
         BufferedReader bufferedReader = null;
         try {
             bufferedReader = new BufferedReader(new FileReader(file));
             String line;
-            String tempSqlKey;
+            String tempSqlKey = null;
             while ((line = bufferedReader.readLine()) != null) {
                 //===，--- 为sql分割符，读取到分割符之后，则获取一条完整sql
                 if (line.startsWith("===") || line.startsWith("---")) {
@@ -44,17 +45,7 @@ public class MdResolve {
                     tempSqlKey = list.pollLast().trim();
                     //取出当前sqlKey
                     String key = list.pollFirst();
-                    //如果key的格式是*xxx*则表示当前sql是静态sql
-                    if (key != null) {
-                        //处理静态sql
-                        if (key.startsWith("*")) {
-                            key = key.substring(1, key.length() - 1).trim();
-                            SqlCache.fixed.put(group + key, buildSql(list));
-                        } else {
-                            //动态sql交给模板引擎
-                            compile.make(group + key, buildSql(list));
-                        }
-                    }
+                    make(group, key, list);
                     //将下一条sqlKey再放入list
                     list.addLast(tempSqlKey);
                 } else {
@@ -64,6 +55,8 @@ public class MdResolve {
                     }
                 }
             }
+            //处理最后一条SQL
+            make(group, list.pollFirst(), list);
         } catch (FileNotFoundException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
@@ -75,6 +68,20 @@ public class MdResolve {
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
+            }
+        }
+    }
+
+    private void make(String group, String key, LinkedList<String> list) {
+        //如果key的格式是*xxx*则表示当前sql是静态sql
+        if (key != null) {
+            String usefulKey = new StringBuilder(StringTools.firstCharToUpperCase(group)).append("_").append(StringTools.firstCharToUpperCase(key.replace("*", ""))).toString();
+            //处理静态sql
+            if (key.startsWith("*")) {
+                SqlCache.fixed.put(usefulKey, buildSql(list));
+            } else {
+                //动态sql交给模板引擎
+                compile.make(usefulKey, buildSql(list));
             }
         }
     }

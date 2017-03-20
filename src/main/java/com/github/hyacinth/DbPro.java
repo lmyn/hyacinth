@@ -135,7 +135,10 @@ public class DbPro {
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);
         ResultSet rs = pst.executeQuery();
-        Object obj = rs.getObject(1);
+        Object obj = null;
+        if(rs.next()){
+            obj = rs.getObject(1);
+        }
         DbKit.close(rs, pst);
         return (T) obj;
     }
