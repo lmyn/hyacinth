@@ -19,7 +19,7 @@ public class MdFileListener implements FileAlterationListener {
 
     @Override
     public void onStart(FileAlterationObserver observer) {
-        LOGGER.info("正在监控：{}", observer.getDirectory().getAbsolutePath());
+        LOGGER.info("starting to monitor folder. path: {}", observer.getDirectory().getAbsolutePath());
     }
 
     @Override
@@ -41,14 +41,14 @@ public class MdFileListener implements FileAlterationListener {
     public void onFileCreate(File file) {
         MdResolve resolve = new MdResolve();
         resolve.resolve(file);
-        LOGGER.info("已重新加载文件：", file);
+        LOGGER.info("reload file {}", file);
     }
 
     @Override
     public void onFileChange(File file) {
         MdResolve resolve = new MdResolve();
         resolve.resolve(file);
-        LOGGER.info("已重新加载文件：", file);
+        LOGGER.info("reload file {}", file);
     }
 
     @Override

@@ -86,6 +86,7 @@ public class HyacinthConfiguration {
             config.setDataSource(dataSource);
         }
 
+        MdResolve.setCompile(new DefaultCompiler());
         //如果配置上，开启了热加载功能，则启用文件监听进程
         if (isHotLoad) {
             if (this.monitor == null) {
@@ -97,7 +98,6 @@ public class HyacinthConfiguration {
         new TableBuilder().build(basePackage, config);
         DbKit.addConfig(config);
         DbKit.setRender(new DefaultRender());
-        MdResolve.setCompile(new DefaultCompiler());
         isStarted = true;
 
     }
@@ -106,6 +106,7 @@ public class HyacinthConfiguration {
      * 开启sql文件热加载
      */
     private void startHotLoad() throws IOException {
+        MdResolve resolve = new MdResolve();
         List<String> paths = new ArrayList<String>();
         for (Resource resource : mdLocations) {
             File file = resource.getFile();
@@ -113,6 +114,7 @@ public class HyacinthConfiguration {
             if (file.isDirectory()) {
                 path = file.getAbsolutePath();
             } else {
+                resolve.resolve(file);
                 path = file.getParentFile().getAbsolutePath();
             }
             if (!paths.contains(path)) {
