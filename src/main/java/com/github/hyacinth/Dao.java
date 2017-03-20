@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Dao
  */
-public class Dao implements IContainer {
+public class Dao implements Container {
 	
 	public static final Map<String, Object> daoMap = new DaoMap<Object>();
 	public static final Set<String> daoSet = new DaoSet();

@@ -25,7 +25,7 @@ public class Config {
     Dialect dialect;
     boolean showSql;
     boolean devMode;
-    IContainer container;
+    Container container;
 
     /**
      * Constructor with full parameters
@@ -37,7 +37,7 @@ public class Config {
      * @param devMode          the devMode
      * @param container the container
      */
-    public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, IContainer container) {
+    public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, Container container) {
         if (StringTools.isBlank(name))
             throw new IllegalArgumentException("Config name can not be blank");
         if (dataSource == null)
@@ -66,7 +66,7 @@ public class Config {
      * Constructor with name, dataSource and dialect
      */
     public Config(String name, DataSource dataSource, Dialect dialect) {
-        this(name, dataSource, dialect, false, false, IContainer.defaultContainer);
+        this(name, dataSource, dialect, false, false, Container.defaultContainer);
     }
 
     private Config() {
@@ -81,7 +81,7 @@ public class Config {
         ret.dialect = new MysqlDialect();
         ret.showSql = false;
         ret.devMode = false;
-        ret.container = IContainer.defaultContainer;
+        ret.container = Container.defaultContainer;
         return ret;
     }
 
@@ -101,7 +101,7 @@ public class Config {
         this.dataSource = dataSource;
     }
 
-    public IContainer getContainer() {
+    public Container getContainer() {
         return container;
     }
 
