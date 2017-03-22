@@ -3,6 +3,8 @@ package com.github.hyacinth;
 import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.dialect.MysqlDialect;
 import com.github.hyacinth.tools.StringTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -19,6 +21,8 @@ import java.sql.Statement;
  * Time: 10:14
  */
 public class Config {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
+
     private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 
     //标识名
@@ -98,21 +102,11 @@ public class Config {
         return showSql;
     }
 
-    // --------
-
     /**
-     * Support transaction with Transaction interceptor
-     */
-    public final void setThreadLocalConnection(Connection connection) {
-        threadLocal.set(connection);
-    }
-
-    public final void removeThreadLocalConnection() {
-        threadLocal.remove();
-    }
-
-    /**
-     * Get Connection. Support transaction if Connection in ThreadLocal
+     * 获取数据库连接
+     *
+     * @return
+     * @throws SQLException
      */
     public final Connection getConnection() throws SQLException {
         Connection conn = threadLocal.get();
@@ -122,49 +116,24 @@ public class Config {
     }
 
     /**
-     * Helps to implement nested transaction.
-     * Tx.intercept(...) and Db.tx(...) need this method to detected if it in nested transaction.
-     */
-    public final Connection getThreadLocalConnection() {
-        return threadLocal.get();
-    }
-
-    /**
-     * Return true if current thread in transaction.
-     */
-    public final boolean isInTransaction() {
-        return threadLocal.get() != null;
-    }
-
-    /**
-     * Close ResultSet、Statement、Connection
-     * ThreadLocal support declare transaction.
+     * 以下几组方法用于连接资源释放
      */
     public final void close(ResultSet rs, Statement st, Connection conn) {
         if (rs != null) {
             try {
                 rs.close();
             } catch (SQLException e) {
-//                LogKit.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         if (st != null) {
             try {
                 st.close();
             } catch (SQLException e) {
-//                LogKit.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
-
-        if (threadLocal.get() == null) {    // in transaction if conn in threadlocal
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    throw new HyacinthException(e);
-                }
-            }
-        }
+        close(conn);
     }
 
     public final void close(Statement st, Connection conn) {
@@ -172,11 +141,14 @@ public class Config {
             try {
                 st.close();
             } catch (SQLException e) {
-//                LogKit.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
+        close(conn);
+    }
 
-        if (threadLocal.get() == null) {    // in transaction if conn in threadlocal
+    public final void close(Connection conn) {
+        if (threadLocal.get() == null) { // in transaction if conn in threadlocal
             if (conn != null) {
                 try {
                     conn.close();
@@ -185,15 +157,6 @@ public class Config {
                 }
             }
         }
-    }
 
-    public final void close(Connection conn) {
-        if (threadLocal.get() == null)        // in transaction if conn in threadlocal
-            if (conn != null)
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    throw new HyacinthException(e);
-                }
     }
 }
