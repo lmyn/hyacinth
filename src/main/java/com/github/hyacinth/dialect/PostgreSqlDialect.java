@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * PostgreSql方言
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/2/8

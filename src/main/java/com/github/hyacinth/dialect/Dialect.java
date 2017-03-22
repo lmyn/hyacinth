@@ -1,74 +1,239 @@
 package com.github.hyacinth.dialect;
 
-import com.github.hyacinth.Model;
-import com.github.hyacinth.Page;
 import com.github.hyacinth.Record;
 import com.github.hyacinth.Table;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
+ * 方言抽象类
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/1/17
  * Time: 18:07
  */
 public abstract class Dialect {
-    // Methods for common
+
+    /**
+     * 用于生成Model时，从数据库查询对应表的表结构信息
+     *
+     * @param tableName 表名
+     * @return 查询Sql
+     */
     public abstract String forTableBuilderDoBuild(String tableName);
 
+    /**
+     * 生成分页查询Sql
+     *
+     * @param pageNumber 当前查询页码
+     * @param pageSize   页大小
+     * @param sql        未进行分页处理的查询sql
+     * @return 生成好的分页查询Sql
+     */
     public abstract String forPaginate(int pageNumber, int pageSize, String sql);
 
-    // Methods for Model
-    public abstract String forModelFindById(Table table, String columns);
+    /**
+     * 生成根据主键查询Model的Sql
+     *
+     * @param table   model对应的表
+     * @param columns 需要查询的列
+     * @return 生成好的查询Sql
+     */
+    public String forModelFindById(Table table, String columns) {
+        StringBuilder sql = new StringBuilder("select ").append(columns).append(" from ");
+        sql.append(table.getName());
+        sql.append(" where ");
+        String[] pKeys = table.getPrimaryKey();
+        for (int i = 0; i < pKeys.length; i++) {
+            if (i > 0) {
+                sql.append(" and ");
+            }
+            sql.append(pKeys[i]).append(" = ?");
+        }
+        return sql.toString();
+    }
 
-    public abstract String forModelDeleteById(Table table);
+    /**
+     * 生成根据Id删除Model的Sql
+     *
+     * @param table model对应的表
+     * @return 生成好的查询Sql
+     */
+    public String forModelDeleteById(Table table) {
+        String[] pKeys = table.getPrimaryKey();
+        StringBuilder sql = new StringBuilder(45);
+        sql.append("delete from ");
+        sql.append(table.getName());
+        sql.append(" where ");
+        for (int i = 0; i < pKeys.length; i++) {
+            if (i > 0) {
+                sql.append(" and ");
+            }
+            sql.append(pKeys[i]).append(" = ?");
+        }
+        return sql.toString();
+    }
 
-    public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
+    /**
+     * 生成Model保存的Sql
+     *
+     * @param table model对应的表
+     * @param attrs 需要保存的属性（列）
+     * @param sql   生成好的插入Sql
+     * @param paras Sql参数列表
+     */
+    public void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+        sql.append("insert into ").append(table.getName()).append("(");
+        StringBuilder temp = new StringBuilder(") values(");
+        for (Map.Entry<String, Object> e : attrs.entrySet()) {
+            String colName = e.getKey();
+            if (table.hasColumnLabel(colName)) {
+                if (paras.size() > 0) {
+                    sql.append(", ");
+                    temp.append(", ");
+                }
+                sql.append(colName);
+                temp.append("?");
+                paras.add(e.getValue());
+            }
+        }
+        sql.append(temp.toString()).append(")");
+    }
 
-    public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras);
+    /**
+     * 生成Model修改的Sql
+     *
+     * @param table      model对应的表
+     * @param attrs      需要修改的属性（列）
+     * @param modifyFlag 修改过的属性
+     * @param sql        生成好的插入Sql
+     * @param paras      Sql参数列表
+     */
+    public void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras) {
+        sql.append("update ").append(table.getName()).append(" set ");
+        String[] pKeys = table.getPrimaryKey();
+        for (Map.Entry<String, Object> e : attrs.entrySet()) {
+            String colName = e.getKey();
+            if (modifyFlag.contains(colName) && !isPrimaryKey(colName, pKeys) && table.hasColumnLabel(colName)) {
+                if (paras.size() > 0) {
+                    sql.append(", ");
+                }
+                sql.append(colName).append(" = ? ");
+                paras.add(e.getValue());
+            }
+        }
+        sql.append(" where ");
+        for (int i = 0; i < pKeys.length; i++) {
+            if (i > 0) {
+                sql.append(" and ");
+            }
+            sql.append(pKeys[i]).append(" = ?");
+            paras.add(attrs.get(pKeys[i]));
+        }
+    }
 
-    // Methods for DbPro. Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
-    public abstract String forDbFindById(String tableName, String[] pKeys);
+    /**
+     * forDb系列方法 同以上forModel系列方法
+     */
+    public String forDbFindById(String tableName, String[] pKeys) {
+        tableName = tableName.trim();
+        trimPrimaryKeys(pKeys);
 
-    public abstract String forDbDeleteById(String tableName, String[] pKeys);
+        StringBuilder sql = new StringBuilder("select * from ").append(tableName).append(" where ");
+        for (int i = 0; i < pKeys.length; i++) {
+            if (i > 0) {
+                sql.append(" and ");
+            }
+            sql.append(pKeys[i]).append(" = ?");
+        }
+        return sql.toString();
+    }
 
-    public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
+    public String forDbDeleteById(String tableName, String[] pKeys) {
+        tableName = tableName.trim();
+        trimPrimaryKeys(pKeys);
 
-    public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras);
+        StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
+        for (int i = 0; i < pKeys.length; i++) {
+            if (i > 0) {
+                sql.append(" and ");
+            }
+            sql.append(pKeys[i]).append(" = ?");
+        }
+        return sql.toString();
+    }
+
+    public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+        tableName = tableName.trim();
+        trimPrimaryKeys(pKeys);
+
+        sql.append("insert into ");
+        sql.append(tableName).append("(");
+        StringBuilder temp = new StringBuilder();
+        temp.append(") values(");
+
+        for (Map.Entry<String, Object> e : record.getColumns().entrySet()) {
+            if (paras.size() > 0) {
+                sql.append(", ");
+                temp.append(", ");
+            }
+            sql.append(e.getKey());
+            temp.append("?");
+            paras.add(e.getValue());
+        }
+        sql.append(temp.toString()).append(")");
+    }
+
+    public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
+        tableName = tableName.trim();
+        trimPrimaryKeys(pKeys);
+
+        sql.append("update ").append(tableName).append(" set ");
+        for (Map.Entry<String, Object> e : record.getColumns().entrySet()) {
+            String colName = e.getKey();
+            if (!isPrimaryKey(colName, pKeys)) {
+                if (paras.size() > 0) {
+                    sql.append(", ");
+                }
+                sql.append(colName).append(" = ? ");
+                paras.add(e.getValue());
+            }
+        }
+        sql.append(" where ");
+        for (int i = 0; i < pKeys.length; i++) {
+            if (i > 0) {
+                sql.append(" and ");
+            }
+            sql.append(pKeys[i]).append(" = ?");
+            paras.add(ids[i]);
+        }
+    }
 
     public boolean isOracle() {
         return false;
     }
 
-    public boolean isTakeOverDbPaginate() {
-        return false;
-    }
-
-    public Page<Record> takeOverDbPaginate(Connection conn, int pageNumber, int pageSize, Boolean isGroupBySql, String select, String sqlExceptSelect, Object... paras) throws SQLException {
-        throw new RuntimeException("You should implements this method in " + getClass().getName());
-    }
-
-    public boolean isTakeOverModelPaginate() {
-        return false;
-    }
-
-    public Page takeOverModelPaginate(Class<? extends Model> modelClass) throws Exception {
-        throw new RuntimeException("You should implements this method in " + getClass().getName());
-    }
-
+    /**
+     * 添加Sql参数
+     *
+     * @param pst   PreparedStatement
+     * @param paras 参数列表
+     * @throws SQLException
+     */
     public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
         for (int i = 0, size = paras.size(); i < size; i++) {
             pst.setObject(i + 1, paras.get(i));
         }
     }
 
+    /**
+     * @see #fillStatement(PreparedStatement, List)
+     */
     public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
         for (int i = 0; i < paras.length; i++) {
             pst.setObject(i + 1, paras[i]);
@@ -103,16 +268,4 @@ public abstract class Dialect {
         }
     }
 
-    protected static class Holder {
-        // "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*";
-        private static final Pattern ORDER_BY_PATTERN = Pattern.compile(
-                "order\\s+by\\s+[^,\\s]+(\\s+asc|\\s+desc)?(\\s*,\\s*[^,\\s]+(\\s+asc|\\s+desc)?)*",
-                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-
-
-    }
-
-    public String replaceOrderBy(String sql) {
-        return Holder.ORDER_BY_PATTERN.matcher(sql).replaceAll("");
-    }
 }

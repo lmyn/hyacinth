@@ -8,12 +8,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Mysql方言
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/2/8
  * Time: 16:00
  */
 public class MysqlDialect extends Dialect {
+
     public String forTableBuilderDoBuild(String tableName) {
         return "select * from `" + tableName + "` where 1 = 2";
     }
@@ -130,9 +133,6 @@ public class MysqlDialect extends Dialect {
         return sql.toString();
     }
 
-    /**
-     * Do not delete the String[] pKeys parameter, the element of pKeys needs to trim()
-     */
     public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);    // important
