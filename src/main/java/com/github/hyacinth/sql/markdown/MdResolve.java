@@ -114,7 +114,7 @@ public class MdResolve {
                     LOGGER.error("The key:{} is unknown at the {}", refKey, key);
                     throw new HyacinthException("The key is unknown");
                 }
-                sqlBuilder.replace(start, end, subSqlBlock.toString());
+                sqlBuilder.replace(start, end + 2, subSqlBlock.toString());
             }
 
             String sql = sqlBuilder.toString().trim().replaceAll("\\s+", " ");

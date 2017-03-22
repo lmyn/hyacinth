@@ -65,7 +65,7 @@
         init-method="init" destroy-method="close">
 		<property name="dataSource" ref="dataSource" />
         <property name="configName" value="main" />
-        <property name="basePackage" value="cn.wisestar.crm.commons.model.base"/>
+        <property name="basePackage" value="cn.wisestar.crm.commons.model"/>
         <property name="dialect" value="com.github.hyacinth.dialect.MysqlDialect" />
         <property name="isHotLoad" value="true" />
         <property name="mdLocations" value="classpath*:sql/*.md" />

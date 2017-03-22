@@ -6,12 +6,16 @@ import com.github.hyacinth.sql.DefaultCompiler;
 import com.github.hyacinth.sql.markdown.MdFileMonitor;
 import com.github.hyacinth.sql.DefaultBuilder;
 import com.github.hyacinth.sql.markdown.MdResolve;
+import com.github.hyacinth.tools.PathTools;
 import com.github.hyacinth.tools.StringTools;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +95,7 @@ public class HyacinthConfiguration {
         //处理sql资源文件
         processSqlFile(isHotLoad);
 
-        new TableBuilder().build(basePackage, config);
+        new TableBuilder().build(getBaseModelClass(basePackage), config);
         DbKit.addConfig(config);
         DbKit.setSqlBuilder(new DefaultBuilder());
         isStarted = true;
@@ -124,6 +128,53 @@ public class HyacinthConfiguration {
 
             monitor.addListener(folders, interval);
         }
+    }
+
+    /**
+     * 获取modelclass
+     *
+     * @param basePackage
+     * @return
+     * @throws IOException
+     */
+    private List<Class<? extends Model<?>>> getBaseModelClass(String basePackage) throws IOException {
+        List<Class<? extends Model<?>>> classes = new ArrayList<Class<? extends Model<?>>>();
+
+        String classPattern = "classpath*:" + basePackage.replace(".", "/") + "/*.class";
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources(classPattern);
+
+        //获取类路径
+        for (Resource resource : resources) {
+            URL url = resource.getURL();
+            String protocol = url.getProtocol(),
+                    className = null;
+            if (protocol.equals("file")) {
+                //获取classpath路径
+                String rootClassPath = PathTools.getRootClassPath(),
+                        classFilePath = resource.getFile().getAbsolutePath();
+                if (!classFilePath.contains(rootClassPath)){
+                    //处理测试路径
+                    rootClassPath = rootClassPath.replace("test-classes", "classes");
+                }
+                className = classFilePath.substring(0, classFilePath.length() - 6).replace(rootClassPath + File.separator, "").replace(File.separator, ".");
+            } else if (protocol.equals("jar")) {
+                String classUrlPath = url.getPath();
+                //从jar url中截图类名
+                className = classUrlPath.substring(classUrlPath.indexOf(".jar!/") + 6, classUrlPath.length() - 6).replace("/", ".");
+            }
+            if(className != null && !className.contains("$")){
+                try {
+                    Class<?> clazz = Class.forName(className);
+                    if(Model.class.isAssignableFrom(clazz)){
+                        classes.add((Class<? extends Model<?>>) clazz);
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return classes;
     }
 
 

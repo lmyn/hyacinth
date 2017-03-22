@@ -1,10 +1,12 @@
 package com.github.hyacinth;
 
+import cn.wisestar.crm.commons.model.Ad;
 import com.alibaba.fastjson.JSON;
 import com.github.hyacinth.dialect.MysqlDialect;
 import com.github.hyacinth.generator.Generator;
 import com.github.hyacinth.tools.ClassTools;
 import com.github.hyacinth.tools.PathTools;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import jetbrick.util.JSONUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,13 +88,14 @@ public class HyacinthTest {
 
     @Test
     public void test4(){
-        Page<Record> records = Db.paginate(10, 1, "User_SelectDate2");
+        Page<Record> records = Db.paginate(10, 1, "user.selectDate2");
         System.out.println(JSON.toJSONString(records));
     }
 
     @Test
     public void test5(){
-        String abc = " efwafewa feawfeaw    feawsdfw dcsaaw fefdaef    eesfe\tfeosl\nfewoisks  \t\n  \tkldkjie\n\n   ewomen";
-        System.out.println(abc.replaceAll("\\s+", " "));
+        Ad ad = Ad.dao.findById("3");
+
+        System.out.println(ad.getTitle());
     }
 }

@@ -47,7 +47,11 @@ selectDate
 -------------
 > 测试2
 
-    select * from ad
+    select * from {{user.fee323232f}}
+    
+fee323232f
+---------
+    ad
         
 
 

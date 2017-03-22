@@ -509,16 +509,16 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     /**
      * 查询Model.
      *
-     * @param key   fixed key
+     * @param sql   sql语句
      * @param paras fixed 参数
      * @return Model list
      */
-    public List<M> find(String key, Object... paras) {
+    public List<M> find(String sql, Object... paras) {
         Config config = getConfig();
         Connection conn = null;
         try {
             conn = config.getConnection();
-            return find(conn, SqlCache.fixed.get(key), paras);
+            return find(conn, sql, paras);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {
