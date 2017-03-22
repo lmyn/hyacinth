@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
+ * 核心配置对象
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/2/8
@@ -19,25 +21,21 @@ import java.sql.Statement;
 public class Config {
     private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 
+    //标识名
     String name;
+    //数据源
     DataSource dataSource;
 
+    //数据库方言
     Dialect dialect;
+    //是否展示Sql
     boolean showSql;
-    boolean devMode;
     Container container;
 
     /**
-     * Constructor with full parameters
-     *
-     * @param name             the name of the config
-     * @param dataSource       the dataSource
-     * @param dialect          the dialect
-     * @param showSql          the showSql
-     * @param devMode          the devMode
-     * @param container the container
+     * 以下4个构造方法
      */
-    public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, boolean devMode, Container container) {
+    public Config(String name, DataSource dataSource, Dialect dialect, boolean showSql, Container container) {
         if (StringTools.isBlank(name))
             throw new IllegalArgumentException("Config name can not be blank");
         if (dataSource == null)
@@ -51,36 +49,27 @@ public class Config {
         this.dataSource = dataSource;
         this.dialect = dialect;
         this.showSql = showSql;
-        this.devMode = devMode;
         this.container = container;
     }
 
-    /**
-     * Constructor with name and dataSource
-     */
     public Config(String name, DataSource dataSource) {
-        this(name, dataSource, new MysqlDialect());
+        this(name, dataSource, false, new MysqlDialect());
     }
 
-    /**
-     * Constructor with name, dataSource and dialect
-     */
-    public Config(String name, DataSource dataSource, Dialect dialect) {
-        this(name, dataSource, dialect, false, false, Container.defaultContainer);
+    public Config(String name, DataSource dataSource, boolean showSql, Dialect dialect) {
+        this(name, dataSource, dialect, showSql, Container.defaultContainer);
     }
 
     private Config() {
-
     }
 
     /**
-     * Create broken config for DbKit.brokenConfig = Config.createBrokenConfig();
+     * 缺省Config  DbKit.brokenConfig = Config.createBrokenConfig()
      */
     static Config createBrokenConfig() {
         Config ret = new Config();
         ret.dialect = new MysqlDialect();
         ret.showSql = false;
-        ret.devMode = false;
         ret.container = Container.defaultContainer;
         return ret;
     }
@@ -107,10 +96,6 @@ public class Config {
 
     public boolean isShowSql() {
         return showSql;
-    }
-
-    public boolean isDevMode() {
-        return devMode;
     }
 
     // --------

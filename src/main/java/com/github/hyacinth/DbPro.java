@@ -1,7 +1,6 @@
 package com.github.hyacinth;
 
 import com.github.hyacinth.sql.BuildKit;
-import com.github.hyacinth.sql.SqlCache;
 import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -3,10 +3,8 @@ package com.github.hyacinth;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 将ResultSet封装成Record

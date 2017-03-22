@@ -1,10 +1,10 @@
 package com.github.hyacinth.sql.markdown;
 
 import com.github.hyacinth.HyacinthException;
-import com.github.hyacinth.cache.Cache;
-import com.github.hyacinth.cache.PureCache;
 import com.github.hyacinth.sql.SqlCache;
 import com.github.hyacinth.sql.TemplateCompiler;
+import com.github.hyacinth.cache.Cache;
+import com.github.hyacinth.cache.PureCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

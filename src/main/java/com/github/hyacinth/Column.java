@@ -1,6 +1,8 @@
 package com.github.hyacinth;
 
 /**
+ * 数据库字段
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/1/11

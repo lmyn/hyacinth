@@ -1,13 +1,11 @@
 package com.github.hyacinth;
 
-import cn.wisestar.crm.commons.model.Ad;
 import com.alibaba.fastjson.JSON;
 import com.github.hyacinth.dialect.MysqlDialect;
-import com.github.hyacinth.generator.Generator;
+import com.github.hyacinth.model.Ad;
 import com.github.hyacinth.tools.ClassTools;
+import com.github.hyacinth.generator.Generator;
 import com.github.hyacinth.tools.PathTools;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-import jetbrick.util.JSONUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,14 +49,14 @@ public class HyacinthTest {
     @Test
     public void test2(){
         // base model 所使用的包名
-        String baseModelPackageName = "cn.wisestar.crm.commons.model.base";
+        String baseModelPackageName = "test.hyacinth.model.base";
         // base model 文件保存路径
         System.out.println(PathTools.getWebRootPath());
-        String baseModelOutputDir = PathTools.getWebRootPath() + "/src/main/java/cn/wisestar/crm/commons/model/base";
+        String baseModelOutputDir = PathTools.getWebRootPath() + "/src/test/java/test/hyacinth/model/base";
         System.out.println(baseModelOutputDir);
 
         // model 所使用的包名 (MappingKit 默认使用的包名)
-        String modelPackageName = "cn.wisestar.crm.commons.model";
+        String modelPackageName = "test.hyacinth.model";
         // model 文件保存路径 (MappingKit 与 DataDictionary 文件默认保存路径)
         String modelOutputDir = baseModelOutputDir + "/..";
 

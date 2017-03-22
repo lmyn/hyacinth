@@ -495,8 +495,6 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     private List<M> find(Connection conn, String sql, Object... paras) throws Exception {
         Config config = getConfig();
         Class<M> modelClass = getUsefulClass();
-        if (config.devMode)
-            checkTableName(modelClass, sql);
 
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);

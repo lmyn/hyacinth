@@ -1,13 +1,13 @@
 package com.github.hyacinth.support.spring;
 
 import com.github.hyacinth.*;
-import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.sql.DefaultCompiler;
+import com.github.hyacinth.tools.StringTools;
+import com.github.hyacinth.dialect.Dialect;
 import com.github.hyacinth.sql.markdown.MdFileMonitor;
 import com.github.hyacinth.sql.DefaultBuilder;
 import com.github.hyacinth.sql.markdown.MdResolve;
 import com.github.hyacinth.tools.PathTools;
-import com.github.hyacinth.tools.StringTools;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -30,23 +30,25 @@ import java.util.List;
  */
 public class HyacinthConfiguration {
 
-    private DataSource dataSource;
+    DataSource dataSource;
     //热加载
-    private Boolean isHotLoad;
+    Boolean isHotLoad;
     //sql 模板文件路径
-    private Resource[] mdLocations;
+    Resource[] mdLocations;
     //配置
-    private String configName;
+    String configName;
 
-    private String basePackage;
+    String basePackage;
 
-    private Dialect dialect;
+    Dialect dialect;
 
-    private long interval = 5000;
+    long interval = 5000;
 
-    private boolean isStarted = false;
+    boolean showSql = false;
 
-    private MdFileMonitor monitor;
+    boolean isStarted = false;
+
+    MdFileMonitor monitor;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -68,6 +70,10 @@ public class HyacinthConfiguration {
         this.basePackage = basePackage;
     }
 
+    public void setShowSql(boolean showSql) {
+        this.showSql = showSql;
+    }
+
     public void setConfigName(String configName) {
         this.configName = configName;
     }
@@ -84,7 +90,7 @@ public class HyacinthConfiguration {
         if (dataSource == null) {
             throw new IllegalArgumentException("dataSource can not be null");
         }
-        Config config = new Config(configName, dataSource, dialect);
+        Config config = new Config(configName, dataSource, showSql, dialect);
 
         if (config.getDataSource() == null && dataSource != null) {
             config.setDataSource(dataSource);
@@ -153,7 +159,7 @@ public class HyacinthConfiguration {
                 //获取classpath路径
                 String rootClassPath = PathTools.getRootClassPath(),
                         classFilePath = resource.getFile().getAbsolutePath();
-                if (!classFilePath.contains(rootClassPath)){
+                if (!classFilePath.contains(rootClassPath)) {
                     //处理测试路径
                     rootClassPath = rootClassPath.replace("test-classes", "classes");
                 }
@@ -163,10 +169,10 @@ public class HyacinthConfiguration {
                 //从jar url中截图类名
                 className = classUrlPath.substring(classUrlPath.indexOf(".jar!/") + 6, classUrlPath.length() - 6).replace("/", ".");
             }
-            if(className != null && !className.contains("$")){
+            if (className != null && !className.contains("$")) {
                 try {
                     Class<?> clazz = Class.forName(className);
-                    if(Model.class.isAssignableFrom(clazz)){
+                    if (Model.class.isAssignableFrom(clazz)) {
                         classes.add((Class<? extends Model<?>>) clazz);
                     }
                 } catch (ClassNotFoundException e) {
@@ -178,7 +184,6 @@ public class HyacinthConfiguration {
     }
 
 
-
     /**
      * spring 容器销毁bean时调用此方法
      * 方法将停止文件监控进程
@@ -187,7 +192,7 @@ public class HyacinthConfiguration {
      */
     public void close() throws InterruptedException {
         //停止文件监控进程
-        if(this.monitor != null){
+        if (this.monitor != null) {
             this.monitor.shutdown();
         }
     }

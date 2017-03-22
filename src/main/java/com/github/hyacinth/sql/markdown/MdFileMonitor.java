@@ -1,8 +1,8 @@
 package com.github.hyacinth.sql.markdown;
 
+import com.github.hyacinth.tools.StringTools;
 import com.github.hyacinth.sql.monitor.FileAlterationMonitor;
 import com.github.hyacinth.sql.monitor.FileAlterationObserver;
-import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

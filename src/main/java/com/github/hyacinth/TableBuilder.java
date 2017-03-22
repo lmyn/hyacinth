@@ -1,24 +1,12 @@
 package com.github.hyacinth;
 
-import com.github.hyacinth.annotation.PrimaryKey;
-import com.github.hyacinth.annotation.Table;
 import com.github.hyacinth.annotation.Column;
-import com.github.hyacinth.tools.ClassTools;
-import com.github.hyacinth.tools.PathTools;
 import com.github.hyacinth.tools.StringTools;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
+import com.github.hyacinth.annotation.PrimaryKey;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Author: luoyong
@@ -34,16 +22,16 @@ public class TableBuilder {
      * @param modelSubList 类集合
      */
     public void build(List<Class<? extends Model<?>>> modelSubList, Config config) {
-        List<com.github.hyacinth.Table> tableList = new ArrayList<com.github.hyacinth.Table>();
+        List<Table> tableList = new ArrayList<Table>();
         for (Class<? extends Model<?>> subClass : modelSubList) {
             Class<? extends Model<?>> superClass = (Class<? extends Model<?>>) subClass.getSuperclass();
             //获取数据库表名
-            Table tableClass = superClass.getAnnotation(Table.class);
+            com.github.hyacinth.annotation.Table tableClass = superClass.getAnnotation(com.github.hyacinth.annotation.Table.class);
             if(tableClass == null){
                 continue;
             }
             String tableName = tableClass.name();
-            com.github.hyacinth.Table table = new com.github.hyacinth.Table(tableName, subClass);
+            Table table = new Table(tableName, subClass);
             List<String> primaryKeyList = new ArrayList<String>();
             tableList.add(table);
             TableMapping.me().addMapping(table);
@@ -60,7 +48,7 @@ public class TableBuilder {
                     //返回值类型
                     Class<?> javaType = method.getReturnType();
 
-                    Column columnAnno = method.getAnnotation(Column.class);
+                    com.github.hyacinth.annotation.Column columnAnno = method.getAnnotation(Column.class);
                     if(columnAnno == null){
                         continue;
                     }

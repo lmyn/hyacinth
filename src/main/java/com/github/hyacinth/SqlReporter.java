@@ -14,16 +14,11 @@ import java.sql.Connection;
 public class SqlReporter implements InvocationHandler {
 
     private Connection conn;
-    private static boolean logOn = false;
 
-    private static final Logger logger = LoggerFactory.getLogger(SqlReporter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqlReporter.class);
 
     SqlReporter(Connection conn) {
         this.conn = conn;
-    }
-
-    public static void setLog(boolean on) {
-        SqlReporter.logOn = on;
     }
 
     Connection getConnection() {
@@ -32,11 +27,9 @@ public class SqlReporter implements InvocationHandler {
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (logOn) {
-            if (method.getName().equals("prepareStatement")) {
-                String info = "Sql: " + args[0];
-                logger.info(info);
-            }
+        if (method.getName().equals("prepareStatement")) {
+            String info = "Sql: " + args[0];
+            LOGGER.debug(info);
         }
         return method.invoke(conn, args);
     }
