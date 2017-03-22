@@ -50,7 +50,7 @@ public class BaseModelGenerator {
 
     protected String getterPKTemplate =
             "\t@PrimaryKey%n" +
-            "\t@Column(name = \"%s\", type = \"%s\", nullAble = %b, defaultValue = \"%s\", comment = \"%s\")%n" +
+                    "\t@Column(name = \"%s\", type = \"%s\", nullAble = %b, defaultValue = \"%s\", comment = \"%s\")%n" +
                     "\tpublic %s %s() {%n" +
                     "\t\treturn get(\"%s\");%n" +
                     "\t}%n%n";
@@ -131,7 +131,7 @@ public class BaseModelGenerator {
     protected void genGetMethodName(ColumnMeta columnMeta, StringBuilder ret) {
         String getterMethodName = "get" + StringTools.firstCharToUpperCase(columnMeta.attrName);
         String template = (Boolean.valueOf(columnMeta.isPrimaryKey)) ? getterPKTemplate : getterTemplate;
-        String getter = String.format(template, columnMeta.name, columnMeta.type, Boolean.valueOf(columnMeta.isNullable), columnMeta.defaultValue, columnMeta.remarks.replace("\"","\\\""), columnMeta.javaType, getterMethodName, columnMeta.name);
+        String getter = String.format(template, columnMeta.name, columnMeta.type, Boolean.valueOf(columnMeta.isNullable), columnMeta.defaultValue, columnMeta.remarks.replace("\"", "\\\""), columnMeta.javaType, getterMethodName, columnMeta.name);
         ret.append(getter);
     }
 
