@@ -87,13 +87,9 @@ public class HyacinthConfiguration {
         }
 
         MdResolve.setTemplateCompiler(new DefaultCompiler());
-        //如果配置上，开启了热加载功能，则启用文件监听进程
-        if (isHotLoad) {
-            if (this.monitor == null) {
-                this.monitor = new MdFileMonitor();
-            }
-            startHotLoad();
-        }
+
+        //处理sql资源文件
+        processSqlFile(isHotLoad);
 
         new TableBuilder().build(basePackage, config);
         DbKit.addConfig(config);
@@ -105,23 +101,29 @@ public class HyacinthConfiguration {
     /**
      * 开启sql文件热加载
      */
-    private void startHotLoad() throws IOException {
-        MdResolve resolve = new MdResolve();
-        List<String> paths = new ArrayList<String>();
+    private void processSqlFile(boolean isHotLoad) throws IOException {
+        List<File> files = new ArrayList<File>();
+        List<File> folders = new ArrayList<File>();
+        List<String> foldersPaths = new ArrayList<String>();
         for (Resource resource : mdLocations) {
             File file = resource.getFile();
-            String path;
-            if (file.isDirectory()) {
-                path = file.getAbsolutePath();
-            } else {
-                resolve.resolve(file);
-                path = file.getParentFile().getAbsolutePath();
-            }
-            if (!paths.contains(path)) {
-                paths.add(path);
+            files.add(file);
+            String path = file.getParentFile().getAbsolutePath();
+            if (!foldersPaths.contains(path)) {
+                foldersPaths.add(path);
+                folders.add(file);
             }
         }
-        monitor.addListener(paths, interval);
+        //解析sql文件
+        new MdResolve().resolve(files);
+        //如果配置上，开启了热加载功能，则启用文件监听进程
+        if (isHotLoad) {
+            if (this.monitor == null) {
+                this.monitor = new MdFileMonitor();
+            }
+
+            monitor.addListener(folders, interval);
+        }
     }
 
 

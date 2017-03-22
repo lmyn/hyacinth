@@ -117,12 +117,14 @@ public class MdResolve {
                 sqlBuilder.replace(start, end, subSqlBlock.toString());
             }
 
+            String sql = sqlBuilder.toString().trim().replaceAll("\\s+", " ");
+
             //处理静态sql
             if (key.startsWith("*")) {
-                SqlCache.fixed.put(key.replace("*", ""), sqlBuilder.toString());
+                SqlCache.fixed.put(key.replace("*", ""), sql);
             } else {
                 //动态sql交给模板引擎
-                templateCompiler.compile(key, sqlBuilder.toString());
+                templateCompiler.compile(key, sql);
             }
         }
     }
@@ -154,7 +156,6 @@ public class MdResolve {
             String s = list.pollFirst();
             sqlBuilder.append(s).append(lineSeparator);
         }
-//        return sqlBuilder.toString().trim().replaceAll("\\s+", " ");
     }
 
     public static void setTemplateCompiler(TemplateCompiler templateCompiler) {

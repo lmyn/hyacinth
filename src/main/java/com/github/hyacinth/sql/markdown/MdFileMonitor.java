@@ -6,6 +6,7 @@ import com.github.hyacinth.tools.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +23,9 @@ public class MdFileMonitor {
     //创建文件变化监听器
     private List<FileAlterationMonitor> monitors;
 
-    public void addListener(String filePath, long interval) {
-        if (StringTools.isBlank(filePath)) {
-            throw new IllegalArgumentException("Monitor the path cannot be empty！");
-        }
+    public void addListener(File file, long interval) {
         // 创建一个文件观察器用于处理文件的格式
-        FileAlterationObserver observer = new FileAlterationObserver(filePath);
+        FileAlterationObserver observer = new FileAlterationObserver(file);
         observer.addListener(new MdFileListener());
         FileAlterationMonitor monitor = new FileAlterationMonitor(interval, observer);
         if (monitors == null) {
@@ -42,10 +40,17 @@ public class MdFileMonitor {
 
     }
 
-    public void addListener(List<String> filePaths, long interval) {
-        for (String path : filePaths) {
-            addListener(path, interval);
+    public void addListener(List<File> files, long interval) {
+        for (File file : files) {
+            addListener(file, interval);
         }
+    }
+
+    public void addListener(String path, long interval) {
+        if (StringTools.isBlank(path)) {
+            throw new IllegalArgumentException("Monitor the path cannot be empty！");
+        }
+        addListener(new File(path), interval);
     }
 
     public void shutdown() {
