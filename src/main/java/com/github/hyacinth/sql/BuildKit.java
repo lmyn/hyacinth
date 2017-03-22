@@ -17,7 +17,6 @@ import java.util.Map;
 /**
  * Sql生成器，主要用于自动生成查询总条数的Sql语句
  * <p>
- * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/3/16
@@ -176,6 +175,7 @@ public class BuildKit {
     private static Object getParamsValue(String key, Map<String, Object> params) {
         Object value = params.get(key);
         if (value == null) {
+            //user.orders.order.id
             String[] keys = StringTools.split(key, '.');
             int keysIndexs = keys.length - 1;
 

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * jetbrick-template渲染器
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2016/12/29
@@ -23,7 +25,7 @@ public class DefaultBuilder implements SqlBuilder {
     /**
      * 普通SQL
      *
-     * @param key    标识
+     * @param key   标识
      * @param paras 参数
      * @return SqlParams
      */
@@ -40,7 +42,7 @@ public class DefaultBuilder implements SqlBuilder {
     /**
      * 引擎渲染
      *
-     * @param key    模板标识
+     * @param key   模板标识
      * @param paras 渲染参数
      * @return 引擎渲染结果
      */

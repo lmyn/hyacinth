@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 编译模板
- *
+ * jetbrick-template编译器
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2016/7/30
@@ -22,8 +22,9 @@ public class DefaultCompiler implements TemplateCompiler {
 
     /**
      * 编译模板 （有缓存，并且在有相同name的时候会覆盖）
-     * @param name      模板缓存标识
-     * @param template  模板源码
+     *
+     * @param name     模板缓存标识
+     * @param template 模板源码
      */
     @Override
     public void compile(String name, String template) {
@@ -40,7 +41,7 @@ public class DefaultCompiler implements TemplateCompiler {
      * 默认配置创建
      */
     private static JetEngine getJetEngine() {
-        if(jetEngine == null){
+        if (jetEngine == null) {
             jetEngine = JetEngine.create();
         }
         return jetEngine;
