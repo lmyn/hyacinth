@@ -35,7 +35,7 @@ public class BuildKit {
      * <p>
      * return: SELECT COUNT(*) AS COUNT FROM table1 t1
      *
-     * @param sql       原查询sql
+     * @param sql 原查询sql
      * @return count fixed
      */
     public static String buildTotalSql(String sql) {
@@ -51,9 +51,9 @@ public class BuildKit {
             plainSelect.setOrderByElements(null);
             //获取sql分组信息
             List<Expression> groupItems = plainSelect.getGroupByColumnReferences();
-            if(groupItems != null && !groupItems.isEmpty()){
+            if (groupItems != null && !groupItems.isEmpty()) {
                 return newTotalSql(select.toString());
-            }else{
+            } else {
                 //替换原有SelectItem 为 TotalColumn @a,b,c -> count(*)
                 SelectItem selectItem = new TotalColumn();
                 List<SelectItem> selectItems = new ArrayList<SelectItem>();
@@ -117,7 +117,7 @@ public class BuildKit {
         }
     }
 
-    private static String newTotalSql(String sql){
+    private static String newTotalSql(String sql) {
         return new StringBuilder("SELECT COUNT(*) AS total FROM (").append(sql).append(") hyacinth_alias0").toString();
     }
 
@@ -162,8 +162,6 @@ public class BuildKit {
                     multipleBuilder.deleteCharAt(multipleBuilder.length() - 1);
                 }
                 sql.replace(start - 1, end, multipleBuilder.toString());
-            } else {
-
             }
         }
     }

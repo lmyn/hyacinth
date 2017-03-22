@@ -13,7 +13,7 @@ import java.util.*;
  * Date: 2016/12/29
  * Time: 19:50
  */
-public abstract class Model<M extends Model> implements Serializable {
+public abstract class Model<M extends Model> implements Bean, Serializable {
 
     private static final long serialVersionUID = 1288885111278391312L;
 
@@ -29,8 +29,9 @@ public abstract class Model<M extends Model> implements Serializable {
     /**
      * Attributes of this model
      */
-    private Map<String, Object> attrs = getAttrsMap();    // getConfig().container.getAttrsMap();	// new HashMap<String, Object>();
+    private Map<String, Object> attrs = getAttrsMap();
 
+    @Override
     public Map<String, Object> getAttrsMap() {
         Config config = getConfig();
         if (config == null)
@@ -164,93 +165,62 @@ public abstract class Model<M extends Model> implements Serializable {
         return (T) (result != null ? result : defaultValue);
     }
 
+
     /**
-     * Get attribute of mysql type: varchar, char, enum, set, text, tinytext, mediumtext, longtext
+     * 以下13个方法，用于获取指定Java类型的数据
+     * <p>
+     * String,int,long,bigInteger,date,time,timestamp,double,float,boolean,bigDecimal,bytes,number
+     *
+     * @param attr 属性名
      */
     public String getStr(String attr) {
         return (String) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: int, integer, tinyint(n) n > 1, smallint, mediumint
-     */
     public Integer getInt(String attr) {
         return (Integer) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: bigint, unsign int
-     */
     public Long getLong(String attr) {
         return (Long) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: unsigned bigint
-     */
     public java.math.BigInteger getBigInteger(String attr) {
         return (java.math.BigInteger) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: date, year
-     */
     public java.util.Date getDate(String attr) {
         return (java.util.Date) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: time
-     */
     public Time getTime(String attr) {
         return (Time) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: timestamp, datetime
-     */
     public Timestamp getTimestamp(String attr) {
         return (Timestamp) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: real, double
-     */
     public Double getDouble(String attr) {
         return (Double) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: float
-     */
     public Float getFloat(String attr) {
         return (Float) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: bit, tinyint(1)
-     */
     public Boolean getBoolean(String attr) {
         return (Boolean) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: decimal, numeric
-     */
     public java.math.BigDecimal getBigDecimal(String attr) {
         return (java.math.BigDecimal) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of mysql type: binary, varbinary, tinyblob, blob, mediumblob, longblob
-     */
     public byte[] getBytes(String attr) {
         return (byte[]) attrs.get(attr);
     }
 
-    /**
-     * Get attribute of any type that extends from Number
-     */
     public Number getNumber(String attr) {
         return (Number) attrs.get(attr);
     }
@@ -261,24 +231,43 @@ public abstract class Model<M extends Model> implements Serializable {
      * @param pageNumber 当前页
      * @param pageSize   页大小（每页记录数）
      * @param key        key
+     * @param page       自定义的page对象
      * @param paras      参数列表
      * @return the Page object
-     * @see #doPaginate(Config, int, int, String, Object...)
+     * @see #doPaginate(Config, int, int, String, Page, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Object... paras) {
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Page<M> page, Object... paras) {
+        if(page == null){
+            page = new ProvidePage<M>();
+        }
         String sql = SqlCache.fixed.get(key);
         if (sql == null) {
             throw new HyacinthException("Sql can not find! key:" + key);
         }
         Config config = getConfig();
-        return doPaginate(config, pageNumber, pageSize, sql, paras);
+        return doPaginate(config, pageNumber, pageSize, sql, page, paras);
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras){
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Page<M> page, Map<String, Object> paras) {
+        if(page == null){
+            page = new ProvidePage<M>();
+        }
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
         Config config = getConfig();
-        return doPaginate(config, pageNumber, pageSize, sql, parasValueList.toArray());
+        return doPaginate(config, pageNumber, pageSize, sql, page, parasValueList.toArray());
+    }
+
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Page<M> page) {
+        return paginate(pageNumber, pageSize, key, page, DbKit.NULL_PARA_ARRAY);
+    }
+
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Object... paras) {
+        return paginate(pageNumber, pageSize, key, null, paras);
+    }
+
+    public Page<M> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras) {
+        return paginate(pageNumber, pageSize, key, null, paras);
     }
 
     /**
@@ -288,7 +277,7 @@ public abstract class Model<M extends Model> implements Serializable {
         return paginate(pageNumber, pageSize, key, DbKit.NULL_PARA_ARRAY);
     }
 
-    private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Object... paras) {
+    private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Page<M> page, Object... paras) {
         Connection conn = null;
         try {
             conn = config.getConnection();
@@ -297,26 +286,27 @@ public abstract class Model<M extends Model> implements Serializable {
             }
 
             String totalSql = BuildKit.buildTotalSql(sql);
-            int totalRow = Db.queryColumn(config, conn, totalSql, paras);
+            long totalRow = Db.queryColumn(config, conn, totalSql, paras);
 
+            page.setPageNumber(pageNumber).setPageSize(pageSize);
             if (totalRow == 0) {
-                return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, 0, 0);    // totalRow = 0;
+                return page.setList(new ArrayList<M>(0)).setTotalPage(0).setTotalRow(0);
             }
 
-            int totalPage = totalRow / pageSize;
+            int totalPage = (int) (totalRow / pageSize);
             if (totalRow % pageSize != 0) {
                 totalPage++;
             }
 
             if (pageNumber > totalPage) {
-                return new Page<M>(new ArrayList<M>(0), pageNumber, pageSize, totalPage, (int) totalRow);
+                return page.setList(new ArrayList<M>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
             }
 
             // --------
             String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
 
             List<M> list = find(conn, pageSql, paras);
-            return new Page<M>(list, pageNumber, pageSize, totalPage, totalRow);
+            return page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {

@@ -1,5 +1,6 @@
 package com.github.hyacinth.sql;
 
+import com.github.hyacinth.HyacinthException;
 import jetbrick.template.JetTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,9 @@ public class DefaultBuilder implements SqlBuilder {
         String result;
         //获取模板缓存
         JetTemplate jetTemplate = SqlCache.jetbrickTemplate.get(key);
+        if (jetTemplate == null) {
+            throw new HyacinthException("Template can't find! key:" + key);
+        }
 
         StringWriter stringWriter = new StringWriter();
         if (jetTemplate != null) {
@@ -56,7 +60,7 @@ public class DefaultBuilder implements SqlBuilder {
         try {
             stringWriter.close();
         } catch (IOException e) {
-            LOGGER.error("Can not close stringWriter! SQL sql rendering failed.", e);
+            LOGGER.error("Can't close stringWriter! SQL sql rendering failed.", e);
         }
         return result;
     }

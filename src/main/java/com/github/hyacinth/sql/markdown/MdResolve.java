@@ -1,13 +1,17 @@
 package com.github.hyacinth.sql.markdown;
 
-import com.github.hyacinth.sql.TemplateCompiler;
+import com.github.hyacinth.HyacinthException;
+import com.github.hyacinth.cache.Cache;
+import com.github.hyacinth.cache.PureCache;
 import com.github.hyacinth.sql.SqlCache;
-import com.github.hyacinth.tools.StringTools;
+import com.github.hyacinth.sql.TemplateCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Author: luoyong
@@ -23,40 +27,42 @@ public class MdResolve {
 
     private static TemplateCompiler templateCompiler;
 
+    private static Cache<String, StringBuilder> rawSqls = new PureCache<String, StringBuilder>("rawSqls");
+
     /**
      * 解析Markdown模板文件，将文件中的sql id以及对于sql逐条解析并缓存起来
      *
      * @param file Markdown file path
      */
-    public void resolve(File file) {
+    private void resolveRawSqls(File file) {
         //获取文件名称当做sql组名
-        String group = file.getName().substring(0, file.getName().lastIndexOf("."));
+        String group = file.getName().substring(0, file.getName().lastIndexOf(".")).trim();
         //用于存储文本文件中的sql
-        LinkedList<String> list = new LinkedList<String>();
+        LinkedList<String> lineList = new LinkedList<String>();
         BufferedReader bufferedReader = null;
         try {
             bufferedReader = new BufferedReader(new FileReader(file));
             String line;
-            String tempSqlKey = null;
+            String tempSqlKey;
             while ((line = bufferedReader.readLine()) != null) {
                 //===，--- 为sql分割符，读取到分割符之后，则获取一条完整sql
                 if (line.startsWith("===") || line.startsWith("---")) {
                     //获取下一条sqlKey先存起来
-                    tempSqlKey = list.pollLast().trim();
+                    tempSqlKey = lineList.pollLast().trim();
                     //取出当前sqlKey
-                    String key = list.pollFirst();
-                    make(group, key, list);
+                    String key = lineList.pollFirst();
+                    buildRawSql(group, key, lineList);
                     //将下一条sqlKey再放入list
-                    list.addLast(tempSqlKey);
+                    lineList.addLast(tempSqlKey);
                 } else {
                     //如果是注释行或空行 则忽略
                     if (!(line.trim().equals("") || line.startsWith(">"))) {
-                        list.addLast(line);
+                        lineList.addLast(line);
                     }
                 }
             }
             //处理最后一条SQL
-            make(group, list.pollFirst(), list);
+            buildRawSql(group, lineList.pollFirst().trim(), lineList);
         } catch (FileNotFoundException e) {
             LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
@@ -72,17 +78,68 @@ public class MdResolve {
         }
     }
 
-    private void make(String group, String key, LinkedList<String> list) {
-        //如果key的格式是*xxx*则表示当前sql是静态sql
-        if (key != null) {
-            String usefulKey = new StringBuilder(StringTools.firstCharToUpperCase(group)).append("_").append(StringTools.firstCharToUpperCase(key.replace("*", ""))).toString();
+    /**
+     * 用于系统初始化，从Md文件中，解析出sql语句并放入rawSqls集合里
+     *
+     * @param files 文件集
+     */
+    public void resolve(List<File> files) {
+        for (File file : files) {
+            resolveRawSqls(file);
+        }
+        buildSql();
+    }
+
+    /**
+     * @param file
+     */
+    public void resolve(File file) {
+        resolveRawSqls(file);
+        buildSql();
+    }
+
+    private void buildSql() {
+        for (String key : rawSqls.asMap().keySet()) {
+            StringBuilder sqlBuilder = rawSqls.get(key);
+            //处理sql字块
+            int start, end = -1;
+            while (true) {
+                if ((start = sqlBuilder.indexOf("{{", ++end)) == -1) break;
+                end = sqlBuilder.indexOf("}}");
+                if (end < start) break;
+
+                String refKey = sqlBuilder.substring(start + 2, end);
+                StringBuilder subSqlBlock = rawSqls.get(refKey) == null ? rawSqls.get("*" + refKey) : rawSqls.get(refKey);
+                if(subSqlBlock == null){
+                    LOGGER.error("The key:{} is unknown at the {}", refKey, key);
+                    throw new HyacinthException("The key is unknown");
+                }
+                sqlBuilder.replace(start, end, subSqlBlock.toString());
+            }
+
             //处理静态sql
             if (key.startsWith("*")) {
-                SqlCache.fixed.put(usefulKey, buildSql(list));
+                SqlCache.fixed.put(key.replace("*", ""), sqlBuilder.toString());
             } else {
                 //动态sql交给模板引擎
-                templateCompiler.compile(usefulKey, buildSql(list));
+                templateCompiler.compile(key, sqlBuilder.toString());
             }
+        }
+    }
+
+    private void buildRawSql(String group, String key, LinkedList<String> list) {
+        //如果key的格式是*xxx*则表示当前sql是静态sql
+        if (key != null) {
+            String usefulKey;
+            //处理静态sql
+            if (key.startsWith("*") && key.endsWith("*")) {
+                usefulKey = new StringBuilder("*").append(group).append(".").append(key.replaceAll("\\*", "")).toString();
+            } else {
+                usefulKey = new StringBuilder(group).append(".").append(key).toString();
+            }
+            StringBuilder sqlBuilder = new StringBuilder();
+            buildLineList(list, sqlBuilder);
+            rawSqls.put(usefulKey, sqlBuilder);
         }
     }
 
@@ -92,14 +149,12 @@ public class MdResolve {
      * @param list
      * @return
      */
-    private String buildSql(LinkedList<String> list) {
-        StringBuilder sql = new StringBuilder();
+    private void buildLineList(LinkedList<String> list, StringBuilder sqlBuilder) {
         while (!list.isEmpty()) {
             String s = list.pollFirst();
-            sql.append(s).append(lineSeparator);
+            sqlBuilder.append(s).append(lineSeparator);
         }
-
-        return sql.toString().trim().replaceAll("\\s+", " ");
+//        return sqlBuilder.toString().trim().replaceAll("\\s+", " ");
     }
 
     public static void setTemplateCompiler(TemplateCompiler templateCompiler) {

@@ -464,19 +464,31 @@ public class Db {
      * @param paras the parameters of sql
      * @return the Page object
      */
+
+    public static Page<Record> paginate(int pageNumber, int pageSize, String key, Page<Record> page, Object... paras) {
+        if(page == null){
+            page = new ProvidePage<Record>();
+        }
+        return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(key), page, paras);
+    }
+
+    public static Page<Record> paginate(int pageNumber, int pageSize, String key, Page<Record> page, Map<String, Object> paras) {
+        if(page == null){
+            page = new ProvidePage<Record>();
+        }
+        List<Object> parasValueList = new ArrayList<Object>();
+        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
+        return DbPro.MAIN.paginate(pageNumber, pageSize, sql, page, parasValueList);
+    }
+
     public static Page<Record> paginate(int pageNumber, int pageSize, String key, Object... paras) {
-        return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(key), paras);
+        return paginate(pageNumber, pageSize, key, new ProvidePage<Record>(), paras);
     }
 
     public static Page<Record> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras) {
-        List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
-        return DbPro.MAIN.paginate(pageNumber, pageSize, sql, parasValueList);
+        return paginate(pageNumber, pageSize, key, new ProvidePage<Record>(), paras);
     }
 
-    /**
-     * @see #paginate(int, int, String, Object...)
-     */
     public static Page<Record> paginate(int pageNumber, int pageSize, String key) {
         return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(key));
     }
