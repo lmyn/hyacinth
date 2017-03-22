@@ -11,9 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
+ * Markdown文件解析器
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/2/9
@@ -23,10 +24,12 @@ public class MdResolve {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MdResolve.class);
 
-    protected String lineSeparator = System.getProperty("line.separator", "\n");
+    String lineSeparator = System.getProperty("line.separator", "\n");
 
+    //Sql模板编译器
     private static TemplateCompiler templateCompiler;
 
+    //缓存从Markdown文件中获取的Sql,用于热加载中，便于对Sql子块进行处理
     private static Cache<String, StringBuilder> rawSqls = new PureCache<String, StringBuilder>("rawSqls");
 
     /**
@@ -91,17 +94,25 @@ public class MdResolve {
     }
 
     /**
-     * @param file
+     * 用于监听中文件变动后重新加载文件
+     *
+     * @param file 变更后的文件
      */
     public void resolve(File file) {
         resolveRawSqls(file);
         buildSql();
     }
 
+    /**
+     * 创建Sql
+     * 1、加载子块
+     * 2、放入缓存
+     */
     private void buildSql() {
+        //循环 取所有原Sql
         for (String key : rawSqls.asMap().keySet()) {
             StringBuilder sqlBuilder = rawSqls.get(key);
-            //处理sql字块
+            //处理sql字块(对原Sql进行处理)
             int start, end = -1;
             while (true) {
                 if ((start = sqlBuilder.indexOf("{{", ++end)) == -1) break;
@@ -110,7 +121,7 @@ public class MdResolve {
 
                 String refKey = sqlBuilder.substring(start + 2, end);
                 StringBuilder subSqlBlock = rawSqls.get(refKey) == null ? rawSqls.get("*" + refKey) : rawSqls.get(refKey);
-                if(subSqlBlock == null){
+                if (subSqlBlock == null) {
                     LOGGER.error("The key:{} is unknown at the {}", refKey, key);
                     throw new HyacinthException("The key is unknown");
                 }
@@ -129,6 +140,13 @@ public class MdResolve {
         }
     }
 
+    /**
+     * 获取原Sql
+     *
+     * @param group 组名
+     * @param key   key
+     * @param list  读取到的多行Sql集
+     */
     private void buildRawSql(String group, String key, LinkedList<String> list) {
         //如果key的格式是*xxx*则表示当前sql是静态sql
         if (key != null) {
@@ -140,7 +158,7 @@ public class MdResolve {
                 usefulKey = new StringBuilder(group).append(".").append(key).toString();
             }
             StringBuilder sqlBuilder = new StringBuilder();
-            buildLineList(list, sqlBuilder);
+            lineListToSql(list, sqlBuilder);
             rawSqls.put(usefulKey, sqlBuilder);
         }
     }
@@ -151,13 +169,17 @@ public class MdResolve {
      * @param list
      * @return
      */
-    private void buildLineList(LinkedList<String> list, StringBuilder sqlBuilder) {
+    private void lineListToSql(LinkedList<String> list, StringBuilder sqlBuilder) {
         while (!list.isEmpty()) {
             String s = list.pollFirst();
             sqlBuilder.append(s).append(lineSeparator);
         }
     }
 
+    /**
+     * 设置Sql模板编译器
+     * @param templateCompiler
+     */
     public static void setTemplateCompiler(TemplateCompiler templateCompiler) {
         MdResolve.templateCompiler = templateCompiler;
     }

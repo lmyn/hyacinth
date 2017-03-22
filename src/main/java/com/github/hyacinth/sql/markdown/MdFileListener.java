@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
+ * 观察者
+ * Markdown文件变动，重新加载变动的文件
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/3/1
@@ -37,17 +40,25 @@ public class MdFileListener implements FileAlterationListener {
 
     }
 
+    /**
+     * 新文件创建时，重新加载新文件
+     *
+     * @param file The file created
+     */
     @Override
     public void onFileCreate(File file) {
-        MdResolve resolve = new MdResolve();
-        resolve.resolve(file);
+        new MdResolve().resolve(file);
         LOGGER.info("reload file {}", file);
     }
 
+    /**
+     * 文件修改，重新加载修改后的文件
+     *
+     * @param file The file changed
+     */
     @Override
     public void onFileChange(File file) {
-        MdResolve resolve = new MdResolve();
-        resolve.resolve(file);
+        new MdResolve().resolve(file);
         LOGGER.info("reload file {}", file);
     }
 
