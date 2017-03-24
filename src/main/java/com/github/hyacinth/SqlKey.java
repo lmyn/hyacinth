@@ -6,5 +6,5 @@ package com.github.hyacinth;
  * Date: 2017/3/24
  * Time: 11:23
  */
-public interface Sql {
+public interface SqlKey {
 }

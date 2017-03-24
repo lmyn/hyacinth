@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.sql.DataSource;
@@ -82,13 +83,13 @@ public class HyacinthTest {
     public void test3(){
         Map<String, Object> paras = new HashMap<String, Object>();
         paras.put("id", 3);
-        Date date = Db.queryColumn("User_SelectDate", paras);
+        Date date = Db.queryColumn(Sqls.User2_selectUser, paras);
         System.out.println(date);
     }
 
     @Test
     public void test4(){
-        Page<Record> records = Db.paginate(10, 1, "user.selectDate2");
+        Page<Record> records = Db.paginate(10, 1, Sqls.User2_selectUser22);
         System.out.println(JSON.toJSONString(records));
     }
 

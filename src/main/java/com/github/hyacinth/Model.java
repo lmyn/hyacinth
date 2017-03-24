@@ -230,51 +230,51 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      *
      * @param pageNumber 当前页
      * @param pageSize   页大小（每页记录数）
-     * @param key        key
+     * @param sqlKey     sqlKey
      * @param page       自定义的page对象
      * @param paras      参数列表
      * @return the Page object
      * @see #doPaginate(Config, int, int, String, Page, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Page<M> page, Object... paras) {
-        if(page == null){
+    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<M> page, Object... paras) {
+        if (page == null) {
             page = new ProvidePage<M>();
         }
-        String sql = SqlCache.fixed.get(key);
+        String sql = SqlCache.fixed.get(sqlKey.toString());
         if (sql == null) {
-            throw new HyacinthException("Sql can not find! key:" + key);
+            throw new HyacinthException("Sql can not find! key:" + sqlKey.toString());
         }
         Config config = getConfig();
         return doPaginate(config, pageNumber, pageSize, sql, page, paras);
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Page<M> page, Map<String, Object> paras) {
-        if(page == null){
+    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<M> page, Map<String, Object> paras) {
+        if (page == null) {
             page = new ProvidePage<M>();
         }
         List<Object> parasValueList = new ArrayList<Object>();
-        String sql = DbKit.sqlBuilder.build(key, paras, parasValueList);
+        String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
         Config config = getConfig();
         return doPaginate(config, pageNumber, pageSize, sql, page, parasValueList.toArray());
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Page<M> page) {
-        return paginate(pageNumber, pageSize, key, page, DbKit.NULL_PARA_ARRAY);
+    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<M> page) {
+        return paginate(pageNumber, pageSize, sqlKey, page, DbKit.NULL_PARA_ARRAY);
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Object... paras) {
-        return paginate(pageNumber, pageSize, key, null, paras);
+    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
+        return paginate(pageNumber, pageSize, sqlKey, null, paras);
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, String key, Map<String, Object> paras) {
-        return paginate(pageNumber, pageSize, key, null, paras);
+    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
+        return paginate(pageNumber, pageSize, sqlKey, null, paras);
     }
 
     /**
-     * @see #paginate(int, int, String, Object...)
+     * @see #paginate(int, int, SqlKey, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, String key) {
-        return paginate(pageNumber, pageSize, key, DbKit.NULL_PARA_ARRAY);
+    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
+        return paginate(pageNumber, pageSize, sqlKey, DbKit.NULL_PARA_ARRAY);
     }
 
     private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Page<M> page, Object... paras) {
@@ -507,11 +507,15 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     /**
      * 查询Model.
      *
-     * @param sql   sql语句
-     * @param paras fixed 参数
+     * @param sqlKey sqlKey
+     * @param paras  fixed 参数
      * @return Model list
      */
-    public List<M> find(String sql, Object... paras) {
+    public List<M> find(SqlKey sqlKey, Object... paras) {
+        return find(SqlCache.fixed.get(sqlKey.toString()), paras);
+    }
+
+    private List<M> find(String sql, Object... paras) {
         Config config = getConfig();
         Connection conn = null;
         try {
@@ -527,24 +531,24 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     /**
      * @see #find(String, Object...)
      */
-    public List<M> find(String key, Map<String, Object> paras) {
+    public List<M> find(SqlKey sqlKey, Map<String, Object> paras) {
         List<Object> parasList = new ArrayList<Object>();
-        String sql = DbKit.sqlBuilder.build(key, paras, parasList);
-        return find(sql, parasList.toArray());
+        String sqlStr = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasList);
+        return find(sqlStr, parasList.toArray());
     }
 
     /**
-     * @see #find(String, Map)
+     * @see #find(SqlKey, Map)
      */
-    public List<M> find(String key, M model) {
-        return find(key, model.getAttrs());
+    public List<M> find(SqlKey sqlKey, M model) {
+        return find(sqlKey.toString(), model.getAttrs());
     }
 
     /**
      * @see #find(String, Object...)
      */
-    public List<M> find(String key) {
-        return find(SqlCache.fixed.get(key), DbKit.NULL_PARA_ARRAY);
+    public List<M> find(SqlKey sqlKey) {
+        return find(SqlCache.fixed.get(sqlKey.toString()), DbKit.NULL_PARA_ARRAY);
     }
 
     /**
@@ -559,21 +563,21 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     /**
      * 查询第一条记录. 建议在sql中加上 "limit 1"
      *
-     * @param key   fixed key
-     * @param paras fixed 参数
+     * @param sqlKey sqlKey
+     * @param paras  fixed 参数
      * @return Model
      */
-    public M findFirst(String key, Object... paras) {
-        List<M> result = find(SqlCache.fixed.get(key), paras);
+    public M findFirst(SqlKey sqlKey, Object... paras) {
+        List<M> result = find(SqlCache.fixed.get(sqlKey.toString()), paras);
         return result.size() > 0 ? result.get(0) : null;
     }
 
     /**
-     * @param key fixed key
-     * @see #findFirst(String, Object...)
+     * @param sqlKey sqlKey
+     * @see #findFirst(SqlKey, Object...)
      */
-    public M findFirst(String key) {
-        return findFirst(SqlCache.fixed.get(key), DbKit.NULL_PARA_ARRAY);
+    public M findFirst(SqlKey sqlKey) {
+        return findFirst(sqlKey, DbKit.NULL_PARA_ARRAY);
     }
 
     /**
