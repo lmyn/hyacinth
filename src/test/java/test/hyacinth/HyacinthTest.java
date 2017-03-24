@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import test.hyacinth.model.Ad;
+import test.hyacinth.service.TestService;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -31,6 +33,9 @@ public class HyacinthTest {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private TestService testService;
 
     @Test
     public void test(){
@@ -95,9 +100,9 @@ public class HyacinthTest {
 
     @Test
     public void test5(){
-//        Ad ad = Ad.dao.findById("3");
-//
-//        System.out.println(ad.getTitle());
+        Ad ad = Ad.dao.findById("3");
+
+        System.out.println(ad.getTitle());
     }
 
 
@@ -107,5 +112,10 @@ public class HyacinthTest {
         String sqlsOutputDir = PathTools.getWebRootPath() + "/src/test/java/test/hyacinth";
         Generator generator = new Generator(sqlsPackageName, sqlsOutputDir);
         generator.sqlsGenerate();
+    }
+
+    @Test
+    public void test7() {
+        testService.test();
     }
 }

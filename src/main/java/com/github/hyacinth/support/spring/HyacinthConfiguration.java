@@ -11,6 +11,7 @@ import com.github.hyacinth.tools.PathTools;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -51,7 +52,12 @@ public class HyacinthConfiguration {
     MdFileMonitor monitor;
 
     public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+        if (!(dataSource instanceof TransactionAwareDataSourceProxy)) {
+            //TransactionAwareDataSourceProxy是事务的最底层，它代理了DataSource，并增加了spring管理事务功能。
+            this.dataSource = new TransactionAwareDataSourceProxy(dataSource);
+        } else {
+            this.dataSource = dataSource;
+        }
     }
 
     public void setDialect(String dialect) throws ClassNotFoundException, IllegalAccessException, InstantiationException {

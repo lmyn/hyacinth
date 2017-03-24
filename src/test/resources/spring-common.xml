@@ -21,7 +21,7 @@
 	<!--<context:property-placeholder location="classpath*:conf/*.properties" />-->
     <!--<context:property-placeholder location="classpath:conf/upload.properties" />-->
 
-    <context:component-scan base-package="com.github.hyacinth.model" />
+    <context:component-scan base-package="test.hyacinth.service" />
 
 	<!-- 配置数据源 使用的是Druid数据源 -->
 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
@@ -53,29 +53,30 @@
 
         <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
         <property name="poolPreparedStatements" value="true" />
-        <property name="maxPoolPreparedStatementPerConnectionSize"
-            value="20" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
 
         <!-- 配置监控统计拦截的filters -->
         <property name="filters" value="stat" />
     </bean>
 
-	<!-- spring 整合hyacinth -->
-	<bean class="com.github.hyacinth.support.spring.HyacinthConfiguration"
-        init-method="init" destroy-method="close">
-		<property name="dataSource" ref="dataSource" />
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- spring 整合hyacinth -->
+    <bean class="com.github.hyacinth.support.spring.HyacinthConfiguration"
+          init-method="init" destroy-method="close">
+        <property name="dataSource" ref="dataSource" />
         <property name="configName" value="main" />
-        <property name="basePackage" value="com.github.hyacinth.model"/>
+        <property name="basePackage" value="test.hyacinth.model"/>
         <property name="dialect" value="com.github.hyacinth.dialect.MysqlDialect" />
         <property name="showSql" value="true" />
         <property name="isHotLoad" value="true" />
         <property name="mdLocations" value="classpath*:sql/*.md" />
         <property name="interval" value="5000" />
-	</bean>
-
-    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource" />
     </bean>
 
+    <!-- 使用annotation定义事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 
 </beans>
