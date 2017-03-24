@@ -102,6 +102,10 @@ public class Config {
         return showSql;
     }
 
+    public final boolean isInTransaction() {
+        return threadLocal.get() != null;
+    }
+
     /**
      * 获取数据库连接
      *

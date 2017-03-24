@@ -7,9 +7,9 @@ import java.util.List;
 
 /**
  * 生成器
- * 1：生成时会强制覆盖 Base model、MappingKit、DataDictionary，建议不要修改三类文件，在数据库有变化重新生成一次便可
+ * 1：生成时会强制覆盖 Base model、DataDictionary，建议不要修改三类文件，在数据库有变化重新生成一次便可
  * 2：生成  Model 不会覆盖已经存在的文件，Model 通常会被人为修改和维护
- * 3：MappingKit 文件默认会在生成 Model 文件的同时生成
+ * 3：Sqls.jar 文件在对sql markdown修改的时候重新生成一次即可，建议不要人为修改Sqls.java文件
  * 4：DataDictionary 文件默认不会生成。只有在设置 setGenerateDataDictionary(true)后，会在生成 Model文件的同时生成
  * 5：可以通过继承 BaseModelGenerator、ModelGenerator、MappingKitGenerator、DataDictionaryGenerator
  * 来创建自定义生成器，然后使用 Generator 的 setter 方法指定自定义生成器来生成
@@ -21,6 +21,7 @@ public class Generator {
     protected BaseModelGenerator baseModelGenerator;
     protected ModelGenerator modelGenerator;
     protected DataDictionaryGenerator dataDictionaryGenerator;
+    protected SqlsGenerator sqlsGenerator;
     protected boolean generateDataDictionary = false;
 
     /**
@@ -80,6 +81,21 @@ public class Generator {
         this.baseModelGenerator = baseModelGenerator;
         this.modelGenerator = modelGenerator;
         this.dataDictionaryGenerator = new DataDictionaryGenerator(dataSource, modelGenerator.modelOutputDir);
+    }
+
+    /**
+     * 构造Sqls类生成器
+     *
+     * @param sqlsPackageName Sqls类名
+     * @param sqlsOutputDir   Sqls类输出路径
+     * @param sqlsClassName   Sqls类自定义类名
+     */
+    public Generator(String sqlsPackageName, String sqlsOutputDir, String sqlsClassName) {
+        this.sqlsGenerator = new SqlsGenerator(sqlsPackageName, sqlsOutputDir, sqlsClassName);
+    }
+
+    public Generator(String sqlsPackageName, String sqlsOutputDir) {
+        this.sqlsGenerator = new SqlsGenerator(sqlsPackageName, sqlsOutputDir);
     }
 
     /**
@@ -168,7 +184,7 @@ public class Generator {
         }
     }
 
-    public void generate() {
+    public void modelGenerate() {
         long start = System.currentTimeMillis();
         List<TableMeta> tableMetas = metaBuilder.build();
         metaBuilder.buildColumnMetasDetail(tableMetas);
@@ -183,16 +199,21 @@ public class Generator {
             modelGenerator.generate(tableMetas);
         }
 
-//		if (mappingKitGenerator != null) {
-//			mappingKitGenerator.generate(tableMetas);
-//		}
-
         if (dataDictionaryGenerator != null && generateDataDictionary) {
             dataDictionaryGenerator.generate(tableMetas);
         }
 
         long usedTime = (System.currentTimeMillis() - start) / 1000;
-        System.out.println("Generate complete in " + usedTime + " seconds.");
+        System.out.println("Model Generate complete in " + usedTime + " seconds.");
+    }
+
+    public void sqlsGenerate() {
+        long start = System.currentTimeMillis();
+        if(sqlsGenerator != null){
+            sqlsGenerator.generate();
+        }
+        long usedTime = System.currentTimeMillis();
+        System.out.println("Sqls Generate complete in " + usedTime + " seconds.");
     }
 }
 

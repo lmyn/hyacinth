@@ -1,4 +1,4 @@
-package com.github.hyacinth;
+package test.hyacinth;
 
 /**
  * Author: luoyong

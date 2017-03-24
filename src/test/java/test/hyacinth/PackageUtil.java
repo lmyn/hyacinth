@@ -1,4 +1,4 @@
-package com.github.hyacinth;
+package test.hyacinth;
 
 import java.io.File;
 import java.net.URL;

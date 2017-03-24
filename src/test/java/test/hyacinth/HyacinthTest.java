@@ -1,8 +1,10 @@
-package com.github.hyacinth;
+package test.hyacinth;
 
 import com.alibaba.fastjson.JSON;
+import com.github.hyacinth.Db;
+import com.github.hyacinth.Page;
+import com.github.hyacinth.Record;
 import com.github.hyacinth.dialect.MysqlDialect;
-import com.github.hyacinth.model.Ad;
 import com.github.hyacinth.tools.ClassTools;
 import com.github.hyacinth.generator.Generator;
 import com.github.hyacinth.tools.PathTools;
@@ -73,7 +75,7 @@ public class HyacinthTest {
         // 设置需要被移除的表名前缀用于生成modelName。例如表名 "osc_user"，移除前缀 "osc_"后生成的model名为 "User"而非 OscUser
         gernerator.setRemovedTableNamePrefixes("sys_","cus_");
         // 生成
-        gernerator.generate();
+        gernerator.modelGenerate();
     }
 
     @Test
@@ -92,8 +94,17 @@ public class HyacinthTest {
 
     @Test
     public void test5(){
-        Ad ad = Ad.dao.findById("3");
+//        Ad ad = Ad.dao.findById("3");
+//
+//        System.out.println(ad.getTitle());
+    }
 
-        System.out.println(ad.getTitle());
+
+    @Test
+    public void test6(){
+        String sqlsPackageName = "test.hyacinth";
+        String sqlsOutputDir = PathTools.getWebRootPath() + "/src/test/java/test/hyacinth";
+        Generator generator = new Generator(sqlsPackageName, sqlsOutputDir);
+        generator.sqlsGenerate();
     }
 }

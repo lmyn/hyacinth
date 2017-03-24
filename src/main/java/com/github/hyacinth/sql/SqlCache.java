@@ -14,6 +14,9 @@ import jetbrick.template.JetTemplate;
  */
 public class SqlCache {
 
+    //缓存从Markdown文件中获取的Sql,用于热加载中，便于对Sql子块进行处理
+    public static final Cache<String, RawSqls> rawSqls = new PureCache<String, RawSqls>("rawSqls");
+
     //静态sql缓存
     public static final Cache<String, String> fixed = new PureCache<String, String>("fixed");
 

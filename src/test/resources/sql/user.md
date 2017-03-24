@@ -24,7 +24,7 @@ selectUser22
         
 selectUser22
 ----------------
-> wfewafewafewafewaf
+> wfewafewafewafewaf3333333333   
     
     select {selectUser} from user = fewafewa323232 ${fewa} @{} #{}
         select
@@ -40,6 +40,7 @@ selectUser22
 selectDate
 -------------
 > 测试
+> owkfewoao
 
     select end_time from ad where id = #{id}
     
@@ -47,7 +48,7 @@ selectDate
 -------------
 > 测试2
 
-    select * from {{user.fee323232f}}
+    select * from {{user_fee323232f}}
     
 fee323232f
 ---------

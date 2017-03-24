@@ -1,4 +1,4 @@
-package com.github.hyacinth;
+package test.hyacinth;
 
 import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
