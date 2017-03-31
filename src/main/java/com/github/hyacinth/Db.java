@@ -9,16 +9,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *
+ *
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/1/11
  * Time: 15:52
  */
 public class Db {
+
     public static DbPro use() {
         return DbPro.MAIN;
     }
 
+    /**
+     * use方法用于切换不同的数据源
+     * @param configName
+     *
+     * @return
+     */
     public static DbPro use(String configName) {
         return DbPro.use(configName);
     }

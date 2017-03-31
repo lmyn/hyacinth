@@ -131,7 +131,7 @@ public class BaseModelGenerator {
     protected void genGetMethodName(ColumnMeta columnMeta, StringBuilder ret) {
         String getterMethodName = "get" + StringTools.firstCharToUpperCase(columnMeta.attrName);
         String template = (Boolean.valueOf(columnMeta.isPrimaryKey)) ? getterPKTemplate : getterTemplate;
-        String getter = String.format(template, columnMeta.name, columnMeta.type, Boolean.valueOf(columnMeta.isNullable), columnMeta.defaultValue, columnMeta.remarks.replace("\"", "\\\""), columnMeta.javaType, getterMethodName, columnMeta.name);
+        String getter = String.format(template, columnMeta.name, columnMeta.type, Boolean.valueOf(columnMeta.isNullable), columnMeta.defaultValue, columnMeta.remarks.replace("\"", "\\\"").replaceAll("\\s+", " "), columnMeta.javaType, getterMethodName, columnMeta.name);
         ret.append(getter);
     }
 
