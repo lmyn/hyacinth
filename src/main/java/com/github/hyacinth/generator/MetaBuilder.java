@@ -292,7 +292,7 @@ public class MetaBuilder {
 
 					columnMeta.defaultValue = rs.getString("COLUMN_DEF");    // 默认值
 					if (columnMeta.defaultValue == null) {
-						columnMeta.defaultValue = "";
+						columnMeta.defaultValue = "null";
 					}
 
 					columnMeta.remarks = rs.getString("REMARKS");            // 备注
