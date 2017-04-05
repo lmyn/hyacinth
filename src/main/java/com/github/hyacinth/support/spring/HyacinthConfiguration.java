@@ -124,10 +124,11 @@ public class HyacinthConfiguration {
         for (Resource resource : mdLocations) {
             File file = resource.getFile();
             files.add(file);
-            String path = file.getParentFile().getAbsolutePath();
+            File folder = file.getParentFile();
+            String path = folder.getAbsolutePath();
             if (!foldersPaths.contains(path)) {
                 foldersPaths.add(path);
-                folders.add(file);
+                folders.add(folder);
             }
         }
         //解析sql文件

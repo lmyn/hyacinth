@@ -15,7 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import test.hyacinth.model.Ad;
-import test.hyacinth.service.TestService;
+import test.hyacinth.service.impl.TestService;
 
 import javax.sql.DataSource;
 import java.util.*;

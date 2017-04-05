@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import test.hyacinth.model.Trade;
-import test.hyacinth.service.TestService;
 
 /**
  * Author: luoyong
@@ -13,7 +12,7 @@ import test.hyacinth.service.TestService;
  * Time: 20:04
  */
 @Service
-public class TestServiceImpl implements TestService {
+public class TestService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void test() {

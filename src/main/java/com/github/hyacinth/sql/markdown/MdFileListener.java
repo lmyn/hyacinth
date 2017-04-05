@@ -22,7 +22,6 @@ public class MdFileListener implements FileAlterationListener {
 
     @Override
     public void onStart(FileAlterationObserver observer) {
-        LOGGER.info("starting to monitor folder. path: {}", observer.getDirectory().getAbsolutePath());
     }
 
     @Override
