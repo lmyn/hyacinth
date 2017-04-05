@@ -1,5 +1,10 @@
 package com.github.hyacinth.dialect;
 
+import com.github.hyacinth.Table;
+
+import java.util.List;
+import java.util.Map;
+
 /**
  * Sqlite方言
  * Author: luoyong
@@ -18,5 +23,10 @@ public class Sqlite3Dialect extends Dialect {
         StringBuilder ret = new StringBuilder(sql);
         ret.append(" limit ").append(offset).append(", ").append(pageSize);
         return ret.toString();
+    }
+
+    @Override
+    public void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+
     }
 }

@@ -39,6 +39,28 @@ public class MysqlDialect extends Dialect {
         sql.append(temp.toString()).append(")");
     }
 
+    @Override
+    public void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+        sql.append("insert into `").append(table.getName()).append("`(");
+        StringBuilder parasPiece = new StringBuilder(") values(");
+        StringBuilder duplicateKeyUpdate = new StringBuilder(" ON DUPLICATE KEY UPDATE ");
+        for (Map.Entry<String, Object> e : attrs.entrySet()) {
+            String colName = e.getKey();
+            if (table.hasColumnLabel(colName)) {
+                if (paras.size() > 0) {
+                    sql.append(", ");
+                    parasPiece.append(", ");
+                }
+                sql.append("`").append(colName).append("`");
+                duplicateKeyUpdate.append("`").append(colName).append("` =?");
+                parasPiece.append("?");
+                paras.add(e.getValue());
+            }
+        }
+        sql.append(parasPiece.toString()).append(")").append(duplicateKeyUpdate.toString());
+        paras.addAll(paras);
+    }
+
     public String forModelDeleteById(Table table) {
         String[] pKeys = table.getPrimaryKey();
         StringBuilder sql = new StringBuilder(45);

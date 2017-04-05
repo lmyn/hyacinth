@@ -8,6 +8,8 @@ import java.sql.*;
 import java.util.*;
 
 /**
+ * Model用于数据的承载，与数据的操作
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2016/12/29
@@ -27,37 +29,32 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Attributes of this model
+     * 数据承载Map
      */
     private Map<String, Object> attrs = getAttrsMap();
 
     @Override
     public Map<String, Object> getAttrsMap() {
         Config config = getConfig();
-        if (config == null)
+        if (config == null) {
             return DbKit.brokenConfig.container.getAttrsMap();
+        }
         return config.container.getAttrsMap();
     }
 
     /**
-     * Flag of column has been modified. update need this flag
+     * 标记已经被修改的列。调用update方法时需要这个标记
      */
     private Set<String> modifyFlag;
-
-	/*
-    private Set<String> getModifyFlag() {
-		if (modifyFlag == null)
-			modifyFlag = getConfig().container.getModifyFlagSet();	// new HashSet<String>();
-		return modifyFlag;
-	}*/
 
     Set<String> getModifyFlag() {
         if (modifyFlag == null) {
             Config config = getConfig();
-            if (config == null)
+            if (config == null) {
                 modifyFlag = DbKit.brokenConfig.container.getModifyFlagSet();
-            else
+            } else {
                 modifyFlag = config.container.getModifyFlagSet();
+            }
         }
         return modifyFlag;
     }
@@ -65,7 +62,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     private String configName = null;
 
     /**
-     * Switching data source, dialect and all config by configName
+     * 切换数据源
      */
     public M use(String configName) {
         this.configName = configName;
@@ -73,27 +70,23 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     protected Config getConfig() {
-        if (configName != null)
+        if (configName != null) {
             return DbKit.getConfig(configName);
+        }
         return DbKit.getConfig(getUsefulClass());
     }
-
-	/*
-    private Config getConfig() {
-		return DbKit.getConfig(getUsefulClass());
-	}*/
 
     private Table getMapping() {
         return TableMapping.me().getMapping(getUsefulClass());
     }
 
     /**
-     * Set attribute to model.
+     * 设置Model属性
      *
-     * @param attr  the attribute name of the model
-     * @param value the value of the attribute
-     * @return this model
-     * @throws HyacinthException if the attribute is not exists of the model
+     * @param attr  属性名称
+     * @param value 值
+     * @return 当前Model
+     * @throws HyacinthException 当属性不存在时，抛出异常
      */
     public M set(String attr, Object value) {
         Table table = getMapping();
@@ -112,7 +105,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Put key value pair to the model without check attribute name.
+     * 设置Model属性，此方法不会对model属性进行检查
      */
     public M put(String key, Object value) {
         attrs.put(key, value);
@@ -120,7 +113,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Put map to the model without check attribute name.
+     * @see #put(String, Object)
      */
     public M put(Map<String, Object> map) {
         attrs.putAll(map);
@@ -128,7 +121,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Put other model to the model without check attribute name.
+     * @see #put(String, Object)
      */
     public M put(Model model) {
         attrs.putAll(model.getAttrs());
@@ -136,7 +129,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Put record to the model without check attribute name.
+     * @see #put(String, Object)
      */
     public M put(Record record) {
         attrs.putAll(record.getColumns());
@@ -144,21 +137,21 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Convert model to record.
+     * 将Model转换成Record
      */
     public Record toRecord() {
         return new Record().setColumns(getAttrs());
     }
 
     /**
-     * Get attribute of any mysql type
+     * 获取属性值
      */
     public <T> T get(String attr) {
         return (T) (attrs.get(attr));
     }
 
     /**
-     * Get attribute of any mysql type. Returns defaultValue if null.
+     * 获取属性值，为空时返回默认值
      */
     public <T> T get(String attr, Object defaultValue) {
         Object result = attrs.get(attr);
@@ -315,24 +308,25 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Return attribute Map.
+     * 返回属性Map
      * <p>
-     * Danger! The update method will ignore the attribute if you change it directly.
-     * You must use set method to change attribute that update method can handle it.
+     * 危险!只修操作此Map将会使得调用update方法时出错，因为被修改属性没有记录；您必须使用set方法来对属性进行操作，以便update方法能正确更新对于属性
      */
     protected Map<String, Object> getAttrs() {
         return attrs;
     }
 
     /**
-     * Return attribute Set.
+     * 获得所有属性名
      */
     public Set<Map.Entry<String, Object>> _getAttrsEntrySet() {
         return attrs.entrySet();
     }
 
     /**
-     * Save model.
+     * 保存model
+     *
+     * @return 执行成功返回true，否则false
      */
     public boolean save() {
         filter(FILTER_BY_SAVE);
@@ -343,18 +337,37 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         StringBuilder sql = new StringBuilder();
         List<Object> paras = new ArrayList<Object>();
         config.dialect.forModelSave(table, attrs, sql, paras);
-        // if (paras.size() == 0)	return false;	// The fixed "insert into tableName() values()" works fine, so delete this line
+        return save(config, table, sql, paras);
+    }
 
-        // --------
+    /**
+     * 保存或更新model
+     *
+     * @return 执行成功返回true，否则false
+     */
+    public boolean saveOrUpdate() {
+        filter(FILTER_BY_SAVE);
+
+        Config config = getConfig();
+        Table table = getMapping();
+
+        StringBuilder sql = new StringBuilder();
+        List<Object> paras = new ArrayList<Object>();
+        config.dialect.forModelSaveOrUpdate(table, attrs, sql, paras);
+        return save(config, table, sql, paras);
+    }
+
+    private boolean save(Config config, Table table, StringBuilder sql, List<Object> paras) {
         Connection conn = null;
         PreparedStatement pst = null;
         int result = 0;
         try {
             conn = config.getConnection();
-            if (config.dialect.isOracle())
+            if (config.dialect.isOracle()) {
                 pst = conn.prepareStatement(sql.toString(), table.getPrimaryKey());
-            else
+            } else {
                 pst = conn.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
+            }
 
             config.dialect.fillStatement(pst, paras);
             result = pst.executeUpdate();
@@ -369,84 +382,9 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Get id after save method.
-     */
-    private void getGeneratedKey(PreparedStatement pst, Table table, Config config) throws SQLException {
-        String[] pKeys = table.getPrimaryKey();
-        ResultSet rs = pst.getGeneratedKeys();
-        for (String pKey : pKeys) {
-            if (get(pKey) == null || config.dialect.isOracle()) {
-                if (rs.next()) {
-                    Class colType = table.getColumnType(pKey);
-                    if (colType == Integer.class || colType == int.class)
-                        set(pKey, rs.getInt(1));
-                    else if (colType == Long.class || colType == long.class)
-                        set(pKey, rs.getLong(1));
-                    else
-                        set(pKey, rs.getObject(1));        // It returns Long object for int colType
-                }
-            }
-        }
-        rs.close();
-    }
-
-    /**
-     * Delete model.
-     */
-    public boolean delete() {
-        Table table = getMapping();
-        String[] pKeys = table.getPrimaryKey();
-        Object[] ids = new Object[pKeys.length];
-        for (int i = 0; i < pKeys.length; i++) {
-            ids[i] = attrs.get(pKeys[i]);
-            if (ids[i] == null)
-                throw new HyacinthException("You can't delete model without primary key value, " + pKeys[i] + " is null");
-        }
-        return deleteById(table, ids);
-    }
-
-    /**
-     * Delete model by id.
-     *
-     * @param idValue the id value of the model
-     * @return true if delete succeed otherwise false
-     */
-    public boolean deleteById(Object idValue) {
-        if (idValue == null)
-            throw new IllegalArgumentException("idValue can not be null");
-        return deleteById(getMapping(), idValue);
-    }
-
-    /**
-     * Delete model by composite id values.
-     *
-     * @param idValues the composite id values of the model
-     * @return true if delete succeed otherwise false
-     */
-    public boolean deleteById(Object... idValues) {
-        Table table = getMapping();
-        if (idValues == null || idValues.length != table.getPrimaryKey().length)
-            throw new IllegalArgumentException("Primary key nubmer must equals id value number and can not be null");
-
-        return deleteById(table, idValues);
-    }
-
-    private boolean deleteById(Table table, Object... idValues) {
-        Config config = getConfig();
-        Connection conn = null;
-        try {
-            conn = config.getConnection();
-            String sql = config.dialect.forModelDeleteById(table);
-            return Db.update(config, conn, sql, idValues) >= 1;
-        } catch (Exception e) {
-            throw new HyacinthException(e);
-        } finally {
-            config.close(conn);
-        }
-    }
-
-    /**
      * 更新model
+     *
+     * @return 执行成功返回true，否则false
      */
     public boolean update() {
         filter(FILTER_BY_UPDATE);
@@ -459,8 +397,9 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         String[] pKeys = table.getPrimaryKey();
         for (String pKey : pKeys) {
             Object id = attrs.get(pKey);
-            if (id == null)
+            if (id == null) {
                 throw new HyacinthException("You can't update model without Primary Key, " + pKey + " can not be null.");
+            }
         }
 
         Config config = getConfig();
@@ -482,6 +421,90 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
                 return true;
             }
             return false;
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
+        }
+    }
+
+    /**
+     * 保存后获取主键
+     */
+    private void getGeneratedKey(PreparedStatement pst, Table table, Config config) throws SQLException {
+        String[] pKeys = table.getPrimaryKey();
+        ResultSet rs = pst.getGeneratedKeys();
+        for (String pKey : pKeys) {
+            if (get(pKey) == null || config.dialect.isOracle()) {
+                if (rs.next()) {
+                    Class colType = table.getColumnType(pKey);
+                    if (colType == Integer.class || colType == int.class) {
+                        set(pKey, rs.getInt(1));
+                    } else if (colType == Long.class || colType == long.class) {
+                        set(pKey, rs.getLong(1));
+                    } else {
+                        set(pKey, rs.getObject(1));        // It returns Long object for int colType
+                    }
+                }
+            }
+        }
+        rs.close();
+    }
+
+    /**
+     * 删除model，默认通过主键进行删除
+     *
+     * @return 执行成功返回true，否则false
+     * @see #deleteById(Table, Object...)
+     */
+    public boolean delete() {
+        Table table = getMapping();
+        String[] pKeys = table.getPrimaryKey();
+        Object[] ids = new Object[pKeys.length];
+        for (int i = 0; i < pKeys.length; i++) {
+            ids[i] = attrs.get(pKeys[i]);
+            if (ids[i] == null) {
+                throw new HyacinthException("You can't delete model without primary key value, " + pKeys[i] + " is null");
+            }
+        }
+        return deleteById(table, ids);
+    }
+
+    /**
+     * 根据主键删除model
+     *
+     * @param idValue 主键值
+     * @return 执行成功返回true，否则false
+     */
+    public boolean deleteById(Object idValue) {
+        if (idValue == null) {
+            throw new IllegalArgumentException("idValue can not be null");
+        }
+        return deleteById(getMapping(), idValue);
+    }
+
+    /**
+     * 根据主键删除model(复合主键)
+     *
+     * @param idValues 复合主键的Id值，注意复合主键顺序一致
+     * @return 执行成功返回true，否则false
+     * @see #deleteById(Table, Object...)
+     */
+    public boolean deleteById(Object... idValues) {
+        Table table = getMapping();
+        if (idValues == null || idValues.length != table.getPrimaryKey().length) {
+            throw new IllegalArgumentException("Primary key nubmer must equals id value number and can not be null");
+        }
+        return deleteById(table, idValues);
+    }
+
+    private boolean deleteById(Table table, Object... idValues) {
+        Config config = getConfig();
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            String sql = config.dialect.forModelDeleteById(table);
+            return Db.update(config, conn, sql, idValues) >= 1;
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {
@@ -552,12 +575,13 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
-     * Check the table name. The table name must in fixed.
+     * 检查sql语句中是否包含model对应的表名
      */
     private void checkTableName(Class<? extends Model> modelClass, String sql) {
         Table table = TableMapping.me().getMapping(modelClass);
-        if (!sql.toLowerCase().contains(table.getName().toLowerCase()))
+        if (!sql.toLowerCase().contains(table.getName().toLowerCase())) {
             throw new HyacinthException("The table name: " + table.getName() + " not in your fixed.");
+        }
     }
 
     /**

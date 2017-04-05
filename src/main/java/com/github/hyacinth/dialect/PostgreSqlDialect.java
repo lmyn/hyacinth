@@ -39,6 +39,11 @@ public class PostgreSqlDialect extends Dialect {
         sql.append(temp.toString()).append(")");
     }
 
+    @Override
+    public void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+
+    }
+
     public String forModelDeleteById(Table table) {
         String[] pKeys = table.getPrimaryKey();
         StringBuilder sql = new StringBuilder(45);

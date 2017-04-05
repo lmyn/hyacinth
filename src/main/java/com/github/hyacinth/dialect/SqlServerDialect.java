@@ -1,5 +1,10 @@
 package com.github.hyacinth.dialect;
 
+import com.github.hyacinth.Table;
+
+import java.util.List;
+import java.util.Map;
+
 /**
  * SqlServer方言
  * <p>
@@ -32,5 +37,10 @@ public class SqlServerDialect extends Dialect {
         ret.append(sql.replaceFirst("(?i)select", ""));
         ret.append(")vip)mvp where temprownumber>").append(begin);
         return ret.toString();
+    }
+
+    @Override
+    public void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+
     }
 }

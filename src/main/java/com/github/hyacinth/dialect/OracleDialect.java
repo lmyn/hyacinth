@@ -48,6 +48,11 @@ public class OracleDialect extends Dialect {
         sql.append(temp.toString()).append(")");
     }
 
+    @Override
+    public void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+
+    }
+
     public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);

@@ -106,6 +106,16 @@ public abstract class Dialect {
     }
 
     /**
+     * 生成SaveOrUpdate的sql, 前提是数据库支持对应的语法
+     *
+     * @param table model对应的表
+     * @param attrs 需要保存的属性（列）
+     * @param sql   生成好的插入Sql
+     * @param paras Sql参数列表
+     */
+    public abstract void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
+
+    /**
      * 生成Model修改的Sql
      *
      * @param table      model对应的表
