@@ -159,6 +159,11 @@ public class PostgreSqlDialect extends Dialect {
         sql.append(temp.toString()).append(")");
     }
 
+    @Override
+    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+
+    }
+
     public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);

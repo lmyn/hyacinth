@@ -82,6 +82,11 @@ public class OracleDialect extends Dialect {
         sql.append(temp.toString()).append(")");
     }
 
+    @Override
+    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+
+    }
+
     public String forPaginate(int pageNumber, int pageSize, String sql) {
         int start = (pageNumber - 1) * pageSize;
         int end = pageNumber * pageSize;

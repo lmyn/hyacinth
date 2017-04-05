@@ -1,5 +1,6 @@
 package com.github.hyacinth.dialect;
 
+import com.github.hyacinth.Record;
 import com.github.hyacinth.Table;
 
 import java.util.List;
@@ -27,6 +28,11 @@ public class Sqlite3Dialect extends Dialect {
 
     @Override
     public void forModelSaveOrUpdate(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras) {
+
+    }
+
+    @Override
+    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
 
     }
 }
