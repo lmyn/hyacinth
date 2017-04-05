@@ -104,7 +104,7 @@ public class SqlsGenerator {
             }
             genEnumKey(ret, key.replace("*", ""));
         }
-        ret.substring(0, ret.lastIndexOf(","));
+        ret.deleteCharAt(ret.lastIndexOf(","));
         ret.append(String.format("}%n"));
 
         writeToFile(ret.toString());
