@@ -110,6 +110,28 @@ public class PostgreSqlDialect extends Dialect {
         return sql.toString();
     }
 
+    @Override
+    public String forModelFindAll(Table table, String columns) {
+        StringBuilder sql = new StringBuilder("select ");
+        columns = columns.trim();
+        if ("*".equals(columns)) {
+            sql.append("*");
+        } else {
+            String[] arr = columns.split(",");
+            for (int i = 0; i < arr.length; i++) {
+                if (i > 0) {
+                    sql.append(",");
+                }
+                sql.append("\"").append(arr[i].trim()).append("\"");
+            }
+        }
+
+        sql.append(" from \"");
+        sql.append(table.getName());
+        sql.append("\"");
+        return sql.toString();
+    }
+
     public String forDbFindById(String tableName, String[] pKeys) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);
@@ -121,6 +143,12 @@ public class PostgreSqlDialect extends Dialect {
             }
             sql.append("\"").append(pKeys[i]).append("\" = ?");
         }
+        return sql.toString();
+    }
+
+    @Override
+    public String forDbFindAll(String tableName) {
+        StringBuilder sql = new StringBuilder("select *  from \"").append(tableName).append("\"");
         return sql.toString();
     }
 

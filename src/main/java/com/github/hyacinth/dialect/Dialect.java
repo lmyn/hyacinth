@@ -58,6 +58,11 @@ public abstract class Dialect {
         return sql.toString();
     }
 
+    public String forModelFindAll(Table table, String columns) {
+        StringBuilder sql = new StringBuilder("select ").append(columns).append(" from ").append(table.getName());
+        return sql.toString();
+    }
+
     /**
      * 生成根据Id删除Model的Sql
      *
@@ -161,6 +166,11 @@ public abstract class Dialect {
             }
             sql.append(pKeys[i]).append(" = ?");
         }
+        return sql.toString();
+    }
+
+    public String forDbFindAll(String tableName) {
+        StringBuilder sql = new StringBuilder("select *  from ").append(tableName);
         return sql.toString();
     }
 
