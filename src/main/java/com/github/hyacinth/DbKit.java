@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 数据操作工具类
+ *
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/2/8
@@ -18,17 +20,12 @@ import java.util.Set;
  */
 public class DbKit {
     /**
-     * The main Config object for system
+     * 主配置
      */
     static Config config = null;
 
     static SqlBuilder sqlBuilder = null;
 
-    /**
-     * 1: For ActiveRecordPlugin.useAsDataTransfer(...) 用于分布式场景
-     * 2: For Model.getAttrsMap()/getModifyFlag() and Record.getColumnsMap()
-     * while the ActiveRecordPlugin not start or the Exception throws of HashSessionManager.restorSession(..) by Jetty
-     */
     static Config brokenConfig = Config.createBrokenConfig();
 
     private static Map<Class<? extends Model>, Config> modelToConfig = new HashMap<Class<? extends Model>, Config>();
@@ -42,9 +39,9 @@ public class DbKit {
     }
 
     /**
-     * Add Config object
+     * 添加配置（数据源）
      *
-     * @param config the Config contains DataSource, Dialect and so on
+     * @param config 配置对象，包含DataSource，Dialect
      */
     public static void addConfig(Config config) {
         if (config == null) {
@@ -56,18 +53,12 @@ public class DbKit {
 
         configNameToConfig.put(config.getName(), config);
 
-        /**
-         * Replace the main config if current config name is MAIN_CONFIG_NAME
-         */
+        //如果当前的配置对象的配置名为默认的主配置名"main",则替换掉原配置对象
         if (MAIN_CONFIG_NAME.equals(config.getName())) {
             DbKit.config = config;
             DbPro.init(DbKit.config.getName());
         }
 
-        /**
-         * The configName may not be MAIN_CONFIG_NAME,
-         * the main config have to set the first comming Config if it is null
-         */
         if (DbKit.config == null) {
             DbKit.config = config;
             DbPro.init(DbKit.config.getName());

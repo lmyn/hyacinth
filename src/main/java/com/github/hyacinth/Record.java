@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 通用数据承载对象
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/1/11
@@ -13,15 +14,17 @@ import java.util.Set;
 public class Record {
     private static final long serialVersionUID = 905784513600884082L;
 
-    private Map<String, Object> columns;    // = getColumnsMap();	// getConfig().container.getColumnsMap();	// new HashMap<String, Object>();
+    /**
+     * 数据承载model
+     */
+    private Map<String, Object> columns;
 
     /**
-     * Set the container by configName.
-     * Only the container of the config used by Record for getColumnsMap()
+     * 根据配置设置container
      *
-     * @param configName the config name
+     * @param configName 配置名
      */
-    public Record setContainerFactoryByConfigName(String configName) {
+    public Record setContainerByConfigName(String configName) {
         Config config = DbKit.getConfig(configName);
         if (config == null)
             throw new IllegalArgumentException("Config not found: " + configName);
@@ -30,7 +33,7 @@ public class Record {
         return this;
     }
 
-    // Only used by RecordBuilder
+    // 仅仅在 RecordBuilder中使用
     void setColumnsMap(Map<String, Object> columns) {
         this.columns = columns;
     }
@@ -47,8 +50,9 @@ public class Record {
     }
 
     /**
-     * Return columns map.
+     * 获取数据承载Map
      */
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getColumns() {
         if (columns == null) {
             if (DbKit.config == null) {
@@ -61,9 +65,9 @@ public class Record {
     }
 
     /**
-     * Set columns value with map.
+     * 设置数据
      *
-     * @param columns the columns map
+     * @param columns data map
      */
     public Record setColumns(Map<String, Object> columns) {
         this.getColumns().putAll(columns);
@@ -71,9 +75,9 @@ public class Record {
     }
 
     /**
-     * Set columns value with Record.
+     * 设置record数据为指定record数据
      *
-     * @param record the Record object
+     * @param record record
      */
     public Record setColumns(Record record) {
         getColumns().putAll(record.getColumns());
@@ -81,9 +85,9 @@ public class Record {
     }
 
     /**
-     * Set columns value with Model object.
+     * 设置record数据为指定model数据
      *
-     * @param model the Model object
+     * @param model model
      */
     public Record setColumns(Model<?> model) {
         getColumns().putAll(model.getAttrs());
@@ -91,9 +95,9 @@ public class Record {
     }
 
     /**
-     * Remove attribute of this record.
+     * 移除单属性
      *
-     * @param column the column name of the record
+     * @param column 需要移除的属性名
      */
     public Record remove(String column) {
         getColumns().remove(column);
@@ -101,19 +105,20 @@ public class Record {
     }
 
     /**
-     * Remove columns of this record.
+     * 移除多个属性
      *
-     * @param columns the column names of the record
+     * @param columns 需要移除的属性名数组
      */
     public Record remove(String... columns) {
         if (columns != null)
-            for (String c : columns)
+            for (String c : columns) {
                 this.getColumns().remove(c);
+            }
         return this;
     }
 
     /**
-     * Remove columns if it is null.
+     * 移除属性值为空的属性
      */
     public Record removeNullValueColumns() {
         for (java.util.Iterator<Map.Entry<String, Object>> it = getColumns().entrySet().iterator(); it.hasNext(); ) {
@@ -126,9 +131,9 @@ public class Record {
     }
 
     /**
-     * Keep columns of this record and remove other columns.
+     * 保留指定属性列，删除其他属性列
      *
-     * @param columns the column names of the record
+     * @param columns 需要保留的属性列
      */
     public Record keep(String... columns) {
         if (columns != null && columns.length > 0) {
@@ -145,9 +150,7 @@ public class Record {
     }
 
     /**
-     * Keep column of this record and remove other columns.
-     *
-     * @param column the column names of the record
+     * @see #keep(String...)
      */
     public Record keep(String column) {
         if (getColumns().containsKey(column)) {    // prevent put null value to the newColumns
@@ -160,7 +163,7 @@ public class Record {
     }
 
     /**
-     * Remove all columns of this record.
+     * 清空所有属性
      */
     public Record clear() {
         getColumns().clear();
@@ -168,10 +171,10 @@ public class Record {
     }
 
     /**
-     * Set column to record.
+     * 设置属性列
      *
-     * @param column the column name
-     * @param value  the value of the column
+     * @param column 属性列名
+     * @param value  属性值
      */
     public Record set(String column, Object value) {
         getColumns().put(column, value);
@@ -179,7 +182,7 @@ public class Record {
     }
 
     /**
-     * Get column of any mysql type
+     * 获取指定属性值
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String column) {
@@ -187,7 +190,7 @@ public class Record {
     }
 
     /**
-     * Get column of any mysql type. Returns defaultValue if null.
+     * 获取指定属性值，如果为空，范围默认值
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String column, Object defaultValue) {
@@ -196,93 +199,61 @@ public class Record {
     }
 
     /**
-     * Get column of mysql type: varchar, char, enum, set, text, tinytext, mediumtext, longtext
+     * 以下13个方法，用于获取指定Java类型的数据
+     * <p>
+     * String,int,long,bigInteger,date,time,timestamp,double,float,boolean,bigDecimal,bytes,number
+     *
+     * @param column 属性列名
+     * @return javaType
      */
     public String getStr(String column) {
         return (String) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: int, integer, tinyint(n) n > 1, smallint, mediumint
-     */
     public Integer getInt(String column) {
         return (Integer) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: bigint
-     */
     public Long getLong(String column) {
         return (Long) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: unsigned bigint
-     */
     public java.math.BigInteger getBigInteger(String column) {
         return (java.math.BigInteger) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: date, year
-     */
     public java.util.Date getDate(String column) {
         return (java.util.Date) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: time
-     */
     public java.sql.Time getTime(String column) {
         return (java.sql.Time) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: timestamp, datetime
-     */
     public java.sql.Timestamp getTimestamp(String column) {
         return (java.sql.Timestamp) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: real, double
-     */
     public Double getDouble(String column) {
         return (Double) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: float
-     */
     public Float getFloat(String column) {
         return (Float) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: bit, tinyint(1)
-     */
     public Boolean getBoolean(String column) {
         return (Boolean) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: decimal, numeric
-     */
     public java.math.BigDecimal getBigDecimal(String column) {
         return (java.math.BigDecimal) getColumns().get(column);
     }
 
-    /**
-     * Get column of mysql type: binary, varbinary, tinyblob, blob, mediumblob, longblob
-     * I have not finished the test.
-     */
     public byte[] getBytes(String column) {
         return (byte[]) getColumns().get(column);
     }
 
-    /**
-     * Get column of any type that extends from Number
-     */
     public Number getNumber(String column) {
         return (Number) getColumns().get(column);
     }
@@ -319,7 +290,7 @@ public class Record {
     }
 
     /**
-     * Return column names of this record.
+     * 获取所有属性列
      */
     public String[] getColumnNames() {
         Set<String> attrNameSet = getColumns().keySet();
@@ -327,7 +298,7 @@ public class Record {
     }
 
     /**
-     * Return column values of this record.
+     * 获取所有属性值
      */
     public Object[] getColumnValues() {
         java.util.Collection<Object> attrValueCollection = getColumns().values();

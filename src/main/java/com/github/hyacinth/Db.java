@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- *
+ * 通用的数据库操作工具类
+ * <p>
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/1/11
@@ -24,8 +24,8 @@ public class Db {
 
     /**
      * use方法用于切换不同的数据源
-     * @param configName
      *
+     * @param configName
      * @return
      */
     public static DbPro use(String configName) {
@@ -37,6 +37,9 @@ public class Db {
     }
 
     /**
+     * query系列方法，返回类型为泛型
+     * 若查询为单个列，那么返回的泛型类型为该列对应的java数据类型，否则为Object[]
+     *
      * @see #query(SqlKey, Object...)
      */
     public static <T> List<T> query(SqlKey sqlKey, Object... paras) {
@@ -50,7 +53,7 @@ public class Db {
     }
 
     /**
-     * @param sqlKey an SQL statement
+     * @param sqlKey sqlKey
      * @see #query(SqlKey, Object...)
      */
     public static <T> List<T> query(SqlKey sqlKey) {
@@ -58,12 +61,10 @@ public class Db {
     }
 
     /**
-     * Execute sql query and return the first result. I recommend add "limit 1" in your sql.
+     * 查询第一个值，如果不能确定范围记录数，请再sql中接入"limit 1"对返回条数进行限制
      *
-     * @param sqlKey an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras  the parameters of sql
-     * @return Object[] if your sql has select more than one column,
-     * and it return Object if your sql has select only one column.
+     * @param sqlKey sqlKey
+     * @param paras  paras
      */
     public static <T> T queryFirst(SqlKey sqlKey, Object... paras) {
         return DbPro.MAIN.queryFirst(SqlCache.fixed.get(sqlKey.toString()), paras);
@@ -76,21 +77,20 @@ public class Db {
     }
 
     /**
-     * @param sqlKey an SQL statement
      * @see #queryFirst(SqlKey, Object...)
      */
     public static <T> T queryFirst(SqlKey sqlKey) {
         return DbPro.MAIN.queryFirst(sqlKey.toString());
     }
 
-    // 26 queryXxx method below -----------------------------------------------
-
     /**
-     * Execute sql query just return one column.
+     * 以下43个方法，用于获取指定Java类型的数据
+     * <p>
+     * String,int,long,bigInteger,date,time,timestamp,double,float,boolean,bigDecimal,bytes,number
      *
-     * @param <T>   the type of the column that in your sql's select statement
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
+     * @param <T>   若查询为单个列，那么返回的泛型类型为该列对应的java数据类型，否则为Object[]
+     * @param sql   sql语句
+     * @param paras 参数列表
      * @return <T> T
      */
     static <T> T queryColumn(Config config, Connection conn, String sql, Object... paras) throws SQLException {
@@ -292,23 +292,13 @@ public class Db {
     public static Number queryNumber(SqlKey sqlKey) {
         return DbPro.MAIN.queryNumber(SqlCache.fixed.get(sqlKey.toString()));
     }
-    // 26 queryXxx method under -----------------------------------------------
 
     /**
-     * Execute sql update
-     */
-    static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.update(config, conn, sql, paras);
-    }
-
-    /**
-     * Execute update, insert or delete sql statement.
+     * update系列方法用于执行insert, update, delete等操作
      *
-     * @param sqlKey an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras  the parameters of sql
-     * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>,
-     * or <code>DELETE</code> statements, or 0 for SQL statements
-     * that return nothing
+     * @param sqlKey sqlKey
+     * @param paras  参数列表
+     * @return 更新记录数
      */
     public static int update(SqlKey sqlKey, Object... paras) {
         return DbPro.MAIN.update(SqlCache.fixed.get(sqlKey.toString()), paras);
@@ -321,19 +311,22 @@ public class Db {
     }
 
     /**
-     * @param sqlKey an SQL statement
      * @see #update(SqlKey, Object...)
      */
     public static int update(SqlKey sqlKey) {
         return DbPro.MAIN.update(SqlCache.fixed.get(sqlKey.toString()));
     }
 
-    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
-        return DbPro.MAIN.find(config, conn, sql, paras);
+    static int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.update(config, conn, sql, paras);
     }
 
     /**
-     * @see #find(SqlKey, Object...)
+     * find系列方法
+     *
+     * @param sqlKey sqlKey
+     * @param paras  参数列表
+     * @return
      */
     public static List<Record> find(SqlKey sqlKey, Object... paras) {
         return DbPro.MAIN.find(SqlCache.fixed.get(sqlKey.toString()), paras);
@@ -346,23 +339,22 @@ public class Db {
     }
 
     /**
-     * @param sqlKey the sql statement
-     * @see #find(SqlKey)
+     * @see #find(SqlKey, Object...)
      */
     public static List<Record> find(SqlKey sqlKey) {
         return DbPro.MAIN.find(SqlCache.fixed.get(sqlKey.toString()));
     }
 
-    public static Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        return DbPro.MAIN.findFirst(config, conn, sql, paras);
+    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
+        return DbPro.MAIN.find(config, conn, sql, paras);
     }
 
     /**
-     * Find first record. I recommend add "limit 1" in your sql.
+     * Record查询，返回第一条记录，如果返回结果集为多条记录，那么只取第一条
      *
-     * @param sqlKey an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras  the parameters of sql
-     * @return the Record object
+     * @param sqlKey sqlKey
+     * @param paras  参数列表
+     * @return Record
      */
     public static Record findFirst(SqlKey sqlKey, Object... paras) {
         return DbPro.MAIN.findFirst(SqlCache.fixed.get(sqlKey.toString()), paras);
@@ -375,100 +367,104 @@ public class Db {
     }
 
     /**
-     * @param sqlKey an SQL statement
      * @see #findFirst(SqlKey, Object...)
      */
     public static Record findFirst(SqlKey sqlKey) {
         return DbPro.MAIN.findFirst(SqlCache.fixed.get(sqlKey.toString()));
     }
 
+    static Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        return DbPro.MAIN.findFirst(config, conn, sql, paras);
+    }
+
     /**
-     * Find record by id with default primary key.
+     * 根据Id查询Record，默认主键为id
      * <pre>
-     * Example:
+     * 示例:
      * Record user = Db.findById("user", 15);
      * </pre>
      *
-     * @param tableName the table name of the table
-     * @param idValue   the id value of the record
+     * @param tableName 表名
+     * @param idValue   主键值
      */
     public static Record findById(String tableName, Object idValue) {
         return DbPro.MAIN.findById(tableName, idValue);
     }
 
     /**
-     * Find record by id.
+     * 根据Id查询Record，需指定id列
      * <pre>
-     * Example:
+     * 示例:
      * Record user = Db.findById("user", "user_id", 123);
      * Record userRole = Db.findById("user_role", "user_id, role_id", 123, 456);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param idValue    the id value of the record, it can be composite id values
+     * @param tableName  表名
+     * @param primaryKey 主键列，复合主键用","号分割
+     * @param idValue    主键值数组
      */
     public static Record findById(String tableName, String primaryKey, Object... idValue) {
         return DbPro.MAIN.findById(tableName, primaryKey, idValue);
     }
 
     /**
-     * Delete record by id with default primary key.
+     * 根据Id删除一条记录，默认主键为id
      * <pre>
-     * Example:
+     * 示例:
      * Db.deleteById("user", 15);
      * </pre>
      *
-     * @param tableName the table name of the table
-     * @param idValue   the id value of the record
-     * @return true if delete succeed otherwise false
+     * @param tableName 表名
+     * @param idValue   主键
+     * @return 删除成功返回true, 否则false
      */
     public static boolean deleteById(String tableName, Object idValue) {
         return DbPro.MAIN.deleteById(tableName, idValue);
     }
 
     /**
-     * Delete record by id.
+     * 根据Id删除一条记录，需指定主键列
      * <pre>
-     * Example:
+     * 示例:
      * Db.deleteById("user", "user_id", 15);
      * Db.deleteById("user_role", "user_id, role_id", 123, 456);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param idValue    the id value of the record, it can be composite id values
-     * @return true if delete succeed otherwise false
+     * @param tableName  表名
+     * @param primaryKey 主键，复合主键使用","号进行分割
+     * @param idValue    id值
+     * @return 删除成功返回true, 否则false
      */
     public static boolean deleteById(String tableName, String primaryKey, Object... idValue) {
         return DbPro.MAIN.deleteById(tableName, primaryKey, idValue);
     }
 
     /**
-     * Delete record.
+     * 根据Id删除一条记录，需指定主键列
      * <pre>
-     * Example:
+     * 示例:
      * boolean succeed = Db.delete("user", "id", user);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the record
-     * @return true if delete succeed otherwise false
+     * @param tableName  表名
+     * @param primaryKey 主键，复合主键使用","号进行分割
+     * @param record     record指定了id之后，id值将从record中进行获取
+     * @return 删除成功返回true, 否则false
      */
-    public static boolean delete(String tableName, String primaryKey, Record record) {
+    public static boolean deleteById(String tableName, String primaryKey, Record record) {
         return DbPro.MAIN.delete(tableName, primaryKey, record);
     }
 
     /**
+     * 根据Id删除一条记录，采用默认主键id
      * <pre>
-     * Example:
+     * 示例:
      * boolean succeed = Db.delete("user", user);
      * </pre>
      *
-     * @see #delete(String, String, Record)
+     * @see #deleteById(String, String, Record)
      */
-    public static boolean delete(String tableName, Record record) {
+    public static boolean deleteById(String tableName, Record record) {
         return DbPro.MAIN.delete(tableName, record);
     }
 
@@ -477,13 +473,13 @@ public class Db {
     }
 
     /**
-     * Paginate.
+     * 分页系列方法
      *
-     * @param pageNumber the page number
-     * @param pageSize   the page size
-     * @param sqlKey     sql statement
-     * @param paras      the parameters of sql
-     * @return the Page object
+     * @param pageNumber 当前页码
+     * @param pageSize   页大小
+     * @param sqlKey     sqlKey
+     * @param paras      参数列表
+     * @return 分页对象
      */
 
     public static Page<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Object... paras) {
@@ -519,16 +515,16 @@ public class Db {
     }
 
     /**
-     * Save record.
+     * 保存
      * <pre>
-     * Example:
+     * 示例:
      * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
      * Db.save("user_role", "user_id, role_id", userRole);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the record will be saved
+     * @param tableName  表名
+     * @param primaryKey 主键，复合主键使用","号进行分割
+     * @param record     需要保存的record
      */
     public static boolean save(String tableName, String primaryKey, Record record) {
         return DbPro.MAIN.save(tableName, primaryKey, record);
@@ -541,29 +537,25 @@ public class Db {
         return DbPro.MAIN.save(tableName, record);
     }
 
-    static boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
-        return DbPro.MAIN.update(config, conn, tableName, primaryKey, record);
-    }
-
     /**
-     * Update Record.
+     * 更新record，需指定id列
      * <pre>
-     * Example:
+     * 示例:
      * Db.update("user_role", "user_id, role_id", record);
      * </pre>
      *
-     * @param tableName  the table name of the Record save to
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the Record object
+     * @param tableName  表名
+     * @param primaryKey 主键，复合主键使用","号进行分割
+     * @param record     需要保存的record
      */
     public static boolean update(String tableName, String primaryKey, Record record) {
         return DbPro.MAIN.update(tableName, primaryKey, record);
     }
 
     /**
-     * Update record with default primary key.
+     * 更新record，默认主键列为id
      * <pre>
-     * Example:
+     * 示例:
      * Db.update("user", record);
      * </pre>
      *
@@ -571,6 +563,10 @@ public class Db {
      */
     public static boolean update(String tableName, Record record) {
         return DbPro.MAIN.update(tableName, record);
+    }
+
+    static boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+        return DbPro.MAIN.update(config, conn, tableName, primaryKey, record);
     }
 
     /**

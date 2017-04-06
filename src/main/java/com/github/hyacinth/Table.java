@@ -75,15 +75,14 @@ public class Table {
     }
 
     /**
-     * Model.save() need know what columns belongs to himself that he can saving to db.
-     * Think about auto saving the related table's column in the future.
+     * 验证指定列是否在存在于当前model
      */
     public boolean hasColumnLabel(String columnLabel) {
         return columnTypeMap.containsKey(columnLabel);
     }
 
     /**
-     * update() and delete() need this method.
+     * 获取主键 update() and delete() 使用.
      */
     public String[] getPrimaryKey() {
         return primaryKey;
