@@ -270,6 +270,27 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         return paginate(pageNumber, pageSize, sqlKey, DbKit.NULL_PARA_ARRAY);
     }
 
+    /**
+     * 分页查询所有数据
+     *
+     * @param pageNumber 页码
+     * @param pageSize   页大小
+     * @param page       分页数据包装对象
+     * @return 分页数据
+     */
+    public Page<M> paginate(int pageNumber, int pageSize, Page<M> page) {
+        Config config = getConfig();
+        String sql = config.dialect.forModelFindAll(getMapping(), "*");
+        return doPaginate(config, pageNumber, pageSize, sql, page, DbKit.NULL_PARA_ARRAY);
+    }
+
+    /**
+     * @see #paginate(int, int, Page)
+     */
+    public Page<M> paginate(int pageNumber, int pageSize) {
+        return paginate(pageNumber, pageSize, new ProvidePage<M>());
+    }
+
     private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Page<M> page, Object... paras) {
         Connection conn = null;
         try {
@@ -572,6 +593,25 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      */
     public List<M> find(SqlKey sqlKey) {
         return find(SqlCache.fixed.get(sqlKey.toString()), DbKit.NULL_PARA_ARRAY);
+    }
+
+    /**
+     * 查询所有数据
+     *
+     * @return model list
+     */
+    public List<M> findAll() {
+        Config config = getConfig();
+        String sql = config.dialect.forModelFindAll(getMapping(), "*");
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            return find(conn, sql, DbKit.NULL_PARA_ARRAY);
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
+        }
     }
 
     /**
