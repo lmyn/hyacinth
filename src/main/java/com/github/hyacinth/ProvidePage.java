@@ -1,10 +1,9 @@
 package com.github.hyacinth;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
+ * 默认的分页数据承载对象
  * Author: luoyong
  * Email: lcrysman@gmail.com
  * Date: 2017/3/21
@@ -12,55 +11,64 @@ import java.util.Map;
  */
 public class ProvidePage<T> implements Page<T> {
 
-    private Map<String, Object> attrs = new HashMap<String, Object>();
+    //当前页码
+    private int pageNumber;
+    //页大小
+    private int pageSize;
+    //总页数
+    private int totalPage;
+    //总记录数
+    private int totalRow;
+    //数据主体
+    private List<T> list;
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public int getTotalPage() {
+        return totalPage;
+    }
+
+    public int getTotalRow() {
+        return totalRow;
+    }
 
     public List<T> getList() {
-        return (List<T>) this.attrs.get("list");
-    }
-
-    public Integer getPageNumber() {
-        return (Integer) this.attrs.get("pageNumber");
-    }
-
-    public Integer getPageSize() {
-        return (Integer) this.attrs.get("pageSize");
-    }
-
-    public Integer getTotalPage() {
-        return (Integer) this.attrs.get("totalPage");
-    }
-
-    public Integer getTotalRow() {
-        return (Integer) this.attrs.get("totalRow");
+        return list;
     }
 
     @Override
     public Page<T> setList(List<T> list) {
-        this.attrs.put("list", list);
+        this.list = list;
         return this;
     }
 
     @Override
     public Page<T> setPageNumber(int pageNumber) {
-        this.attrs.put("pageNumber", pageNumber);
+        this.pageNumber = pageNumber;
         return this;
     }
 
     @Override
     public Page<T> setPageSize(int pageSize) {
-        this.attrs.put("pageSize", pageSize);
+        this.pageSize = pageSize;
         return this;
     }
 
     @Override
     public Page<T> setTotalPage(int totalPage) {
-        this.attrs.put("totalPage", totalPage);
+        this.totalPage = totalPage;
         return this;
     }
 
     @Override
     public Page<T> setTotalRow(int totalRow) {
-        this.attrs.put("totalRow", totalRow);
+        this.totalRow = totalRow;
         return this;
     }
 }
