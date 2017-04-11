@@ -2,6 +2,7 @@ package com.github.hyacinth;
 
 import com.github.hyacinth.sql.BuildKit;
 import com.github.hyacinth.tools.StringTools;
+import jetbrick.util.annotation.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -503,14 +504,14 @@ public class DbPro {
      * @return the Page object
      * @see #doPaginate(Config, Connection, int, int, String, Page, Object...)
      */
-    public Page<Record> paginate(int pageNumber, int pageSize, String sql, Page<Record> page, Object... paras) {
+    public void paginate(int pageNumber, int pageSize, String sql, @NotNull Page<Record> page, Object... paras) {
         if(page == null){
             page = new ProvidePage<Record>();
         }
         Connection conn = null;
         try {
             conn = config.getConnection();
-            return doPaginate(config, conn, pageNumber, pageSize, sql, page, paras);
+            doPaginate(config, conn, pageNumber, pageSize, sql, page, paras);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {
@@ -518,19 +519,23 @@ public class DbPro {
         }
     }
 
-    public Page<Record> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
-        return paginate(pageNumber, pageSize, sql, null, paras);
+    public ProvidePage<Record> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
+        ProvidePage<Record> page = new ProvidePage<Record>();
+        paginate(pageNumber, pageSize, sql, page, paras);
+        return page;
     }
 
-    public Page<Record> paginate(int pageNumber, int pageSize, String sql) {
+    public ProvidePage<Record> paginate(int pageNumber, int pageSize, String sql) {
         return paginate(pageNumber, pageSize, sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
-        return doPaginate(config, conn, pageNumber, pageSize, sql, new ProvidePage<Record>(), paras);
+    ProvidePage<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
+        ProvidePage<Record> page = new ProvidePage<Record>();
+        doPaginate(config, conn, pageNumber, pageSize, sql, page, paras);
+        return page;
     }
 
-    Page<Record> doPaginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Page<Record> page, Object... paras) throws SQLException {
+    void doPaginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, @NotNull Page<Record> page, Object... paras) throws SQLException {
         if (pageNumber < 1 || pageSize < 1) {
             throw new HyacinthException("pageNumber and pageSize must more than 0");
         }
@@ -540,7 +545,7 @@ public class DbPro {
 
         page.setPageNumber(pageNumber).setPageSize(pageSize);
         if (totalRow == 0) {
-            return page.setList(new ArrayList<Record>(0)).setTotalPage(0).setTotalRow(0);
+            page.setList(new ArrayList<Record>(0)).setTotalPage(0).setTotalRow(0);
         }
 
         int totalPage = (int) (totalRow / pageSize);
@@ -549,13 +554,13 @@ public class DbPro {
         }
 
         if (pageNumber > totalPage) {
-            return page.setList(new ArrayList<Record>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
+            page.setList(new ArrayList<Record>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
         }
 
         // --------
         String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
         List<Record> list = find(config, conn, pageSql, paras);
-        return page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
+        page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
     }
 
     boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {

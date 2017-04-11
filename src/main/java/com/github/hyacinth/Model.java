@@ -2,6 +2,7 @@ package com.github.hyacinth;
 
 import com.github.hyacinth.sql.BuildKit;
 import com.github.hyacinth.sql.SqlCache;
+import jetbrick.util.annotation.NotNull;
 
 import java.io.Serializable;
 import java.sql.*;
@@ -226,47 +227,44 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @param sqlKey     sqlKey
      * @param page       自定义的page对象
      * @param paras      参数列表
-     * @return the Page object
      * @see #doPaginate(Config, int, int, String, Page, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<M> page, Object... paras) {
-        if (page == null) {
-            page = new ProvidePage<M>();
-        }
+    public void paginate(int pageNumber, int pageSize, SqlKey sqlKey, @NotNull Page<M> page, Object... paras) {
         String sql = SqlCache.fixed.get(sqlKey.toString());
         if (sql == null) {
             throw new HyacinthException("Sql can not find! key:" + sqlKey.toString());
         }
         Config config = getConfig();
-        return doPaginate(config, pageNumber, pageSize, sql, page, paras);
+        doPaginate(config, pageNumber, pageSize, sql, page, paras);
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<M> page, Map<String, Object> paras) {
-        if (page == null) {
-            page = new ProvidePage<M>();
-        }
+    public void paginate(int pageNumber, int pageSize, SqlKey sqlKey, @NotNull Page<M> page, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
         Config config = getConfig();
-        return doPaginate(config, pageNumber, pageSize, sql, page, parasValueList.toArray());
+        doPaginate(config, pageNumber, pageSize, sql, page, parasValueList.toArray());
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<M> page) {
-        return paginate(pageNumber, pageSize, sqlKey, page, DbKit.NULL_PARA_ARRAY);
+    public void paginate(int pageNumber, int pageSize, SqlKey sqlKey, @NotNull Page<M> page) {
+        paginate(pageNumber, pageSize, sqlKey, page, DbKit.NULL_PARA_ARRAY);
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
-        return paginate(pageNumber, pageSize, sqlKey, null, paras);
+    public ProvidePage<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
+        ProvidePage<M> page = new ProvidePage<M>();
+        paginate(pageNumber, pageSize, sqlKey, page, paras);
+        return page;
     }
 
-    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
-        return paginate(pageNumber, pageSize, sqlKey, null, paras);
+    public ProvidePage<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
+        ProvidePage<M> page = new ProvidePage<M>();
+        paginate(pageNumber, pageSize, sqlKey, page, paras);
+        return page;
     }
 
     /**
      * @see #paginate(int, int, SqlKey, Object...)
      */
-    public Page<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
+    public ProvidePage<M> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
         return paginate(pageNumber, pageSize, sqlKey, DbKit.NULL_PARA_ARRAY);
     }
 
@@ -278,20 +276,22 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @param page       分页数据包装对象
      * @return 分页数据
      */
-    public Page<M> paginate(int pageNumber, int pageSize, Page<M> page) {
+    public void paginate(int pageNumber, int pageSize, @NotNull Page<M> page) {
         Config config = getConfig();
         String sql = config.dialect.forModelFindAll(getMapping(), "*");
-        return doPaginate(config, pageNumber, pageSize, sql, page, DbKit.NULL_PARA_ARRAY);
+        doPaginate(config, pageNumber, pageSize, sql, page, DbKit.NULL_PARA_ARRAY);
     }
 
     /**
      * @see #paginate(int, int, Page)
      */
-    public Page<M> paginate(int pageNumber, int pageSize) {
-        return paginate(pageNumber, pageSize, new ProvidePage<M>());
+    public ProvidePage<M> paginate(int pageNumber, int pageSize) {
+        ProvidePage<M> page = new ProvidePage<M>();
+        paginate(pageNumber, pageSize, page);
+        return page;
     }
 
-    private Page<M> doPaginate(Config config, int pageNumber, int pageSize, String sql, Page<M> page, Object... paras) {
+    private void doPaginate(Config config, int pageNumber, int pageSize, String sql, @NotNull Page<M> page, Object... paras) {
         Connection conn = null;
         try {
             conn = config.getConnection();
@@ -304,7 +304,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
 
             page.setPageNumber(pageNumber).setPageSize(pageSize);
             if (totalRow == 0) {
-                return page.setList(new ArrayList<M>(0)).setTotalPage(0).setTotalRow(0);
+                page.setList(new ArrayList<M>(0)).setTotalPage(0).setTotalRow(0);
             }
 
             int totalPage = (int) (totalRow / pageSize);
@@ -313,14 +313,14 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
             }
 
             if (pageNumber > totalPage) {
-                return page.setList(new ArrayList<M>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
+                page.setList(new ArrayList<M>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
             }
 
             // --------
             String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
 
             List<M> list = find(conn, pageSql, paras);
-            return page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
+            page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
         } catch (Exception e) {
             throw new HyacinthException(e);
         } finally {

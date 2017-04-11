@@ -482,31 +482,29 @@ public class Db {
      * @return 分页对象
      */
 
-    public static Page<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Object... paras) {
-        if (page == null) {
-            page = new ProvidePage<Record>();
-        }
-        return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(sqlKey.toString()), page, paras);
+    public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Object... paras) {
+        DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(sqlKey.toString()), page, paras);
     }
 
-    public static Page<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Map<String, Object> paras) {
-        if (page == null) {
-            page = new ProvidePage<Record>();
-        }
+    public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
-        return DbPro.MAIN.paginate(pageNumber, pageSize, sql, page, parasValueList);
+        DbPro.MAIN.paginate(pageNumber, pageSize, sql, page, parasValueList);
     }
 
-    public static Page<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
-        return paginate(pageNumber, pageSize, sqlKey, new ProvidePage<Record>(), paras);
+    public static ProvidePage<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
+        ProvidePage<Record> page = new ProvidePage<Record>();
+        paginate(pageNumber, pageSize, sqlKey, page, paras);
+        return page;
     }
 
-    public static Page<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
-        return paginate(pageNumber, pageSize, sqlKey, new ProvidePage<Record>(), paras);
+    public static ProvidePage<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
+        ProvidePage<Record> page = new ProvidePage<Record>();
+        paginate(pageNumber, pageSize, sqlKey, page, paras);
+        return page;
     }
 
-    public static Page<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
+    public static ProvidePage<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
         return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(sqlKey.toString()));
     }
 
