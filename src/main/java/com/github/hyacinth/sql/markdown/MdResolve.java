@@ -126,12 +126,15 @@ public class MdResolve {
                 if (end < start) break;
 
                 String refKey = StringTools.firstCharToUpperCase(sqlBuilder.substring(start + 2, end));
-                StringBuilder subSqlBlock = SqlCache.rawSqls.get(refKey) == null
-                        ? SqlCache.rawSqls.get("*" + refKey).getSql() : SqlCache.rawSqls.get(refKey).getSql();
-                if (subSqlBlock == null) {
+                RawSqls rawSqls = SqlCache.rawSqls.get(refKey);
+                if (rawSqls == null) {
+                    rawSqls = SqlCache.rawSqls.get("*" + refKey);
+                }
+                if (rawSqls == null) {
                     LOGGER.error("The key:{} is unknown at the {}", refKey, key);
                     throw new HyacinthException("The key is unknown");
                 }
+                StringBuilder subSqlBlock = rawSqls.getSql();
                 sqlBuilder.replace(start, end + 2, subSqlBlock.toString());
             }
 
@@ -163,7 +166,7 @@ public class MdResolve {
             group = StringTools.firstCharToUpperCase(group);
             //处理静态sql
             if (key.startsWith("*") && key.endsWith("*")) {
-                usefulKey = new StringBuilder("*").append(group).append("_").append(key.replaceAll("\\*", "")).toString();
+                usefulKey = new StringBuilder(group).append("_").append(key.replaceAll("\\*", "")).toString();
             } else {
                 usefulKey = new StringBuilder(group).append("_").append(key).toString();
             }
