@@ -166,7 +166,7 @@ public class MdResolve {
             group = StringTools.firstCharToUpperCase(group);
             //处理静态sql
             if (key.startsWith("*") && key.endsWith("*")) {
-                usefulKey = new StringBuilder(group).append("_").append(key.replaceAll("\\*", "")).toString();
+                usefulKey = new StringBuilder("*").append(group).append("_").append(key.replaceAll("\\*", "")).toString();
             } else {
                 usefulKey = new StringBuilder(group).append("_").append(key).toString();
             }

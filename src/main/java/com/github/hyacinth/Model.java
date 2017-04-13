@@ -615,6 +615,25 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     }
 
     /**
+     * 查询单列所有行
+     *
+     * @return column list
+     */
+    public <T> List<T> findAllLoadColumns(String column) {
+        Config config = getConfig();
+        String sql = config.dialect.forModelFindAll(getMapping(), column);
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            return Db.query(config, conn, sql, DbKit.NULL_PARA_ARRAY);
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
+        }
+    }
+
+    /**
      * 检查sql语句中是否包含model对应的表名
      */
     private void checkTableName(Class<? extends Model> modelClass, String sql) {
