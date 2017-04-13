@@ -149,6 +149,10 @@ public class Generator {
         metaBuilder.addExcludedTable(excludedTables);
     }
 
+    public void addExcludedTablePrefixes(String... excludedTablePrefixes){
+        metaBuilder.addExcludedTablePrefixes(excludedTablePrefixes);
+    }
+
     /**
      * 设置是否在 Model 中生成 dao 对象，默认生成
      */
