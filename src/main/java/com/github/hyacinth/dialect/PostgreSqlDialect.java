@@ -1,6 +1,5 @@
 package com.github.hyacinth.dialect;
 
-import com.github.hyacinth.Record;
 import com.github.hyacinth.Table;
 
 import java.util.List;
@@ -166,7 +165,7 @@ public class PostgreSqlDialect extends Dialect {
         return sql.toString();
     }
 
-    public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    public void forDbSave(String tableName, String[] pKeys, Map<String, Object> record, StringBuilder sql, List<Object> paras) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);
 
@@ -175,7 +174,7 @@ public class PostgreSqlDialect extends Dialect {
         StringBuilder temp = new StringBuilder();
         temp.append(") values(");
 
-        for (Map.Entry<String, Object> e : record.getColumns().entrySet()) {
+        for (Map.Entry<String, Object> e : record.entrySet()) {
             if (paras.size() > 0) {
                 sql.append(", ");
                 temp.append(", ");
@@ -188,16 +187,16 @@ public class PostgreSqlDialect extends Dialect {
     }
 
     @Override
-    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Map<String, Object> record, StringBuilder sql, List<Object> paras) {
 
     }
 
-    public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras) {
+    public void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Map<String, Object> record, StringBuilder sql, List<Object> paras) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);
 
         sql.append("update \"").append(tableName).append("\" set ");
-        for (Map.Entry<String, Object> e : record.getColumns().entrySet()) {
+        for (Map.Entry<String, Object> e : record.entrySet()) {
             String colName = e.getKey();
             if (!isPrimaryKey(colName, pKeys)) {
                 if (paras.size() > 0) {

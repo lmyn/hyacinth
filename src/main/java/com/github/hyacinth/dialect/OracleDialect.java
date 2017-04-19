@@ -1,6 +1,5 @@
 package com.github.hyacinth.dialect;
 
-import com.github.hyacinth.Record;
 import com.github.hyacinth.Table;
 
 import java.sql.PreparedStatement;
@@ -53,7 +52,7 @@ public class OracleDialect extends Dialect {
 
     }
 
-    public void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    public void forDbSave(String tableName, String[] pKeys, Map<String, Object> record, StringBuilder sql, List<Object> paras) {
         tableName = tableName.trim();
         trimPrimaryKeys(pKeys);
 
@@ -63,7 +62,7 @@ public class OracleDialect extends Dialect {
         temp.append(") values(");
 
         int count = 0;
-        for (Map.Entry<String, Object> e : record.getColumns().entrySet()) {
+        for (Map.Entry<String, Object> e : record.entrySet()) {
             String colName = e.getKey();
             if (count++ > 0) {
                 sql.append(", ");
@@ -83,7 +82,7 @@ public class OracleDialect extends Dialect {
     }
 
     @Override
-    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Map<String, Object> record, StringBuilder sql, List<Object> paras) {
 
     }
 

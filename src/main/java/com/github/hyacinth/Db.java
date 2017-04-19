@@ -328,11 +328,11 @@ public class Db {
      * @param paras  参数列表
      * @return
      */
-    public static List<Record> find(SqlKey sqlKey, Object... paras) {
+    public static List<Map<String, Object>> find(SqlKey sqlKey, Object... paras) {
         return DbPro.MAIN.find(SqlCache.fixed.get(sqlKey.toString()), paras);
     }
 
-    public static List<Record> find(SqlKey sqlKey, Map<String, Object> paras) {
+    public static List<Map<String, Object>> find(SqlKey sqlKey, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
         return DbPro.MAIN.find(sql, parasValueList.toArray());
@@ -341,11 +341,11 @@ public class Db {
     /**
      * @see #find(SqlKey, Object...)
      */
-    public static List<Record> find(SqlKey sqlKey) {
+    public static List<Map<String, Object>> find(SqlKey sqlKey) {
         return DbPro.MAIN.find(SqlCache.fixed.get(sqlKey.toString()));
     }
 
-    static List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
+    static List<Map<String, Object>> find(Config config, Connection conn, String sql, Object... paras) throws SQLException, IllegalAccessException, InstantiationException {
         return DbPro.MAIN.find(config, conn, sql, paras);
     }
 
@@ -356,11 +356,11 @@ public class Db {
      * @param paras  参数列表
      * @return Record
      */
-    public static Record findFirst(SqlKey sqlKey, Object... paras) {
+    public static Map<String, Object> findFirst(SqlKey sqlKey, Object... paras) {
         return DbPro.MAIN.findFirst(SqlCache.fixed.get(sqlKey.toString()), paras);
     }
 
-    public static Record findFirst(SqlKey sqlKey, Map<String, Object> paras) {
+    public static Map<String, Object> findFirst(SqlKey sqlKey, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
         return DbPro.MAIN.findFirst(sql, parasValueList.toArray());
@@ -369,11 +369,11 @@ public class Db {
     /**
      * @see #findFirst(SqlKey, Object...)
      */
-    public static Record findFirst(SqlKey sqlKey) {
+    public static Map<String, Object> findFirst(SqlKey sqlKey) {
         return DbPro.MAIN.findFirst(SqlCache.fixed.get(sqlKey.toString()));
     }
 
-    static Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    static Map<String, Object> findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
         return DbPro.MAIN.findFirst(config, conn, sql, paras);
     }
 
@@ -381,13 +381,13 @@ public class Db {
      * 根据Id查询Record，默认主键为id
      * <pre>
      * 示例:
-     * Record user = Db.findById("user", 15);
+     * Map<String, Object> user = Db.findById("user", 15);
      * </pre>
      *
      * @param tableName 表名
      * @param idValue   主键值
      */
-    public static Record findById(String tableName, Object idValue) {
+    public static Map<String, Object> findById(String tableName, Object idValue) {
         return DbPro.MAIN.findById(tableName, idValue);
     }
 
@@ -395,15 +395,15 @@ public class Db {
      * 根据Id查询Record，需指定id列
      * <pre>
      * 示例:
-     * Record user = Db.findById("user", "user_id", 123);
-     * Record userRole = Db.findById("user_role", "user_id, role_id", 123, 456);
+     * Map<String, Object> user = Db.findById("user", "user_id", 123);
+     * Map<String, Object> userRole = Db.findById("user_role", "user_id, role_id", 123, 456);
      * </pre>
      *
      * @param tableName  表名
      * @param primaryKey 主键列，复合主键用","号分割
      * @param idValue    主键值数组
      */
-    public static Record findById(String tableName, String primaryKey, Object... idValue) {
+    public static Map<String, Object> findById(String tableName, String primaryKey, Object... idValue) {
         return DbPro.MAIN.findById(tableName, primaryKey, idValue);
     }
 
@@ -451,7 +451,7 @@ public class Db {
      * @param record     record指定了id之后，id值将从record中进行获取
      * @return 删除成功返回true, 否则false
      */
-    public static boolean deleteById(String tableName, String primaryKey, Record record) {
+    public static boolean deleteById(String tableName, String primaryKey, Map<String, Object> record) {
         return DbPro.MAIN.delete(tableName, primaryKey, record);
     }
 
@@ -462,13 +462,13 @@ public class Db {
      * boolean succeed = Db.delete("user", user);
      * </pre>
      *
-     * @see #deleteById(String, String, Record)
+     * @see #deleteById(String, String, Map)
      */
-    public static boolean deleteById(String tableName, Record record) {
+    public static boolean deleteById(String tableName, Map<String, Object> record) {
         return DbPro.MAIN.delete(tableName, record);
     }
 
-    static Page<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
+    static Page<Map<String, Object>> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
         return DbPro.MAIN.paginate(config, conn, pageNumber, pageSize, sql, paras);
     }
 
@@ -482,33 +482,33 @@ public class Db {
      * @return 分页对象
      */
 
-    public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Object... paras) {
+    public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Map<String, Object>> page, Object... paras) {
         DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(sqlKey.toString()), page, paras);
     }
 
-    public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Record> page, Map<String, Object> paras) {
+    public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Map<String, Object>> page, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
         DbPro.MAIN.paginate(pageNumber, pageSize, sql, page, parasValueList);
     }
 
-    public static ProvidePage<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
-        ProvidePage<Record> page = new ProvidePage<Record>();
+    public static ProvidePage<Map<String, Object>> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
+        ProvidePage<Map<String, Object>> page = new ProvidePage<Map<String, Object>>();
         paginate(pageNumber, pageSize, sqlKey, page, paras);
         return page;
     }
 
-    public static ProvidePage<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
-        ProvidePage<Record> page = new ProvidePage<Record>();
+    public static ProvidePage<Map<String, Object>> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Map<String, Object> paras) {
+        ProvidePage<Map<String, Object>> page = new ProvidePage<Map<String, Object>>();
         paginate(pageNumber, pageSize, sqlKey, page, paras);
         return page;
     }
 
-    public static ProvidePage<Record> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
+    public static ProvidePage<Map<String, Object>> paginate(int pageNumber, int pageSize, SqlKey sqlKey) {
         return DbPro.MAIN.paginate(pageNumber, pageSize, SqlCache.fixed.get(sqlKey.toString()));
     }
 
-    static boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+    static boolean save(Config config, Connection conn, String tableName, String primaryKey, Map<String, Object> record) throws SQLException {
         return DbPro.MAIN.save(config, conn, tableName, primaryKey, record);
     }
 
@@ -516,7 +516,7 @@ public class Db {
      * 保存
      * <pre>
      * 示例:
-     * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
+     * Map<String, Object> userRole = new Record().set("user_id", 123).set("role_id", 456);
      * Db.save("user_role", "user_id, role_id", userRole);
      * </pre>
      *
@@ -524,14 +524,14 @@ public class Db {
      * @param primaryKey 主键，复合主键使用","号进行分割
      * @param record     需要保存的record
      */
-    public static boolean save(String tableName, String primaryKey, Record record) {
+    public static boolean save(String tableName, String primaryKey, Map<String, Object> record) {
         return DbPro.MAIN.save(tableName, primaryKey, record);
     }
 
     /**
-     * @see #save(String, String, Record)
+     * @see #save(String, String, Map)
      */
-    public static boolean save(String tableName, Record record) {
+    public static boolean save(String tableName, Map<String, Object> record) {
         return DbPro.MAIN.save(tableName, record);
     }
 
@@ -546,7 +546,7 @@ public class Db {
      * @param primaryKey 主键，复合主键使用","号进行分割
      * @param record     需要保存的record
      */
-    public static boolean update(String tableName, String primaryKey, Record record) {
+    public static boolean update(String tableName, String primaryKey, Map<String, Object> record) {
         return DbPro.MAIN.update(tableName, primaryKey, record);
     }
 
@@ -557,13 +557,13 @@ public class Db {
      * Db.update("user", record);
      * </pre>
      *
-     * @see #update(String, String, Record)
+     * @see #update(String, String, Map)
      */
-    public static boolean update(String tableName, Record record) {
+    public static boolean update(String tableName, Map<String, Object> record) {
         return DbPro.MAIN.update(tableName, record);
     }
 
-    static boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+    static boolean update(Config config, Connection conn, String tableName, String primaryKey, Map<String, Object> record) throws SQLException {
         return DbPro.MAIN.update(config, conn, tableName, primaryKey, record);
     }
 
@@ -598,7 +598,7 @@ public class Db {
     /**
      * @see DbPro#batchSave(String, List, int)
      */
-    public static int[] batchSave(String tableName, List<Record> recordList, int batchSize) {
+    public static int[] batchSave(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         return DbPro.MAIN.batchSave(tableName, recordList, batchSize);
     }
 
@@ -612,14 +612,14 @@ public class Db {
     /**
      * @see DbPro#batchUpdate(String, String, List, int)
      */
-    public static int[] batchUpdate(String tableName, String primaryKey, List<Record> recordList, int batchSize) {
+    public static int[] batchUpdate(String tableName, String primaryKey, List<Map<String, Object>> recordList, int batchSize) {
         return DbPro.MAIN.batchUpdate(tableName, primaryKey, recordList, batchSize);
     }
 
     /**
      * @see DbPro#batchUpdate(String, List, int)
      */
-    public static int[] batchUpdate(String tableName, List<Record> recordList, int batchSize) {
+    public static int[] batchUpdate(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         return DbPro.MAIN.batchUpdate(tableName, recordList, batchSize);
     }
 

@@ -312,11 +312,11 @@ public class DbPro {
         return update(sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    List<Record> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    List<Map<String, Object>> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);
         ResultSet rs = pst.executeQuery();
-        List<Record> result = RecordBuilder.buildList(config, rs);
+        List<Map<String, Object>> result = RecordBuilder.buildList(config, rs);
         DbKit.close(rs, pst);
         return result;
     }
@@ -324,7 +324,7 @@ public class DbPro {
     /**
      * @see #find(Config, Connection, String, Object...)
      */
-    public List<Record> find(String sql, Object... paras) {
+    public List<Map<String, Object>> find(String sql, Object... paras) {
         Connection conn = null;
         try {
             conn = config.getConnection();
@@ -340,15 +340,15 @@ public class DbPro {
      * @param sql the sql statement
      * @see #find(String, Object...)
      */
-    public List<Record> find(String sql) {
+    public List<Map<String, Object>> find(String sql) {
         return find(sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    Record findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    Map<String, Object> findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);
         ResultSet rs = pst.executeQuery();
-        Record record = RecordBuilder.build(config, rs);
+        Map<String, Object> record = RecordBuilder.build(config, rs);
         DbKit.close(rs, pst);
         return record;
     }
@@ -358,9 +358,9 @@ public class DbPro {
      *
      * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
      * @param paras the parameters of sql
-     * @return the Record object
+     * @return the Map<String, Object> object
      */
-    public Record findFirst(String sql, Object... paras) {
+    public Map<String, Object> findFirst(String sql, Object... paras) {
         Connection conn = null;
         try {
             conn = config.getConnection();
@@ -376,7 +376,7 @@ public class DbPro {
      * @param sql an SQL statement
      * @see #findFirst(String, Object...)
      */
-    public Record findFirst(String sql) {
+    public Map<String, Object> findFirst(String sql) {
         return findFirst(sql, DbKit.NULL_PARA_ARRAY);
     }
 
@@ -384,13 +384,13 @@ public class DbPro {
      * Find record by id with default primary key.
      * <pre>
      * Example:
-     * Record user = DbPro.use().findById("user", 15);
+     * Map<String, Object> user = DbPro.use().findById("user", 15);
      * </pre>
      *
      * @param tableName the table name of the table
      * @param idValue   the id value of the record
      */
-    public Record findById(String tableName, Object idValue) {
+    public Map<String, Object> findById(String tableName, Object idValue) {
         return findById(tableName, config.dialect.getDefaultPrimaryKey(), idValue);
     }
 
@@ -398,21 +398,21 @@ public class DbPro {
      * Find record by id.
      * <pre>
      * Example:
-     * Record user = DbPro.use().findById("user", "user_id", 123);
-     * Record userRole = DbPro.use().findById("user_role", "user_id, role_id", 123, 456);
+     * Map<String, Object> user = DbPro.use().findById("user", "user_id", 123);
+     * Map<String, Object> userRole = DbPro.use().findById("user_role", "user_id, role_id", 123, 456);
      * </pre>
      *
      * @param tableName  the table name of the table
      * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
      * @param idValue    the id value of the record, it can be composite id values
      */
-    public Record findById(String tableName, String primaryKey, Object... idValue) {
+    public Map<String, Object> findById(String tableName, String primaryKey, Object... idValue) {
         String[] pKeys = primaryKey.split(",");
         if (pKeys.length != idValue.length)
             throw new IllegalArgumentException("primary key number must equals id value number");
 
         String sql = config.dialect.forDbFindById(tableName, pKeys);
-        List<Record> result = find(sql, idValue);
+        List<Map<String, Object>> result = find(sql, idValue);
         return result.size() > 0 ? result.get(0) : null;
     }
 
@@ -465,7 +465,7 @@ public class DbPro {
      * @param record     the record
      * @return true if delete succeed otherwise false
      */
-    public boolean delete(String tableName, String primaryKey, Record record) {
+    public boolean delete(String tableName, String primaryKey, Map<String, Object> record) {
         String[] pKeys = primaryKey.split(",");
         if (pKeys.length <= 1)
             return deleteById(tableName, primaryKey, record.get(primaryKey));
@@ -486,9 +486,9 @@ public class DbPro {
      * boolean succeed = DbPro.use().delete("user", user);
      * </pre>
      *
-     * @see #delete(String, String, Record)
+     * @see #delete(String, String, Map)
      */
-    public boolean delete(String tableName, Record record) {
+    public boolean delete(String tableName, Map<String, Object> record) {
         String defaultPrimaryKey = config.dialect.getDefaultPrimaryKey();
         return deleteById(tableName, defaultPrimaryKey, record.get(defaultPrimaryKey));
     }
@@ -504,9 +504,9 @@ public class DbPro {
      * @return the Page object
      * @see #doPaginate(Config, Connection, int, int, String, Page, Object...)
      */
-    public void paginate(int pageNumber, int pageSize, String sql, @NotNull Page<Record> page, Object... paras) {
+    public void paginate(int pageNumber, int pageSize, String sql, @NotNull Page<Map<String, Object>> page, Object... paras) {
         if(page == null){
-            page = new ProvidePage<Record>();
+            page = new ProvidePage<Map<String, Object>>();
         }
         Connection conn = null;
         try {
@@ -519,23 +519,23 @@ public class DbPro {
         }
     }
 
-    public ProvidePage<Record> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
-        ProvidePage<Record> page = new ProvidePage<Record>();
+    public ProvidePage<Map<String, Object>> paginate(int pageNumber, int pageSize, String sql, Object... paras) {
+        ProvidePage<Map<String, Object>> page = new ProvidePage<Map<String, Object>>();
         paginate(pageNumber, pageSize, sql, page, paras);
         return page;
     }
 
-    public ProvidePage<Record> paginate(int pageNumber, int pageSize, String sql) {
+    public ProvidePage<Map<String, Object>> paginate(int pageNumber, int pageSize, String sql) {
         return paginate(pageNumber, pageSize, sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    ProvidePage<Record> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
-        ProvidePage<Record> page = new ProvidePage<Record>();
+    ProvidePage<Map<String, Object>> paginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, Object... paras) throws SQLException {
+        ProvidePage<Map<String, Object>> page = new ProvidePage<Map<String, Object>>();
         doPaginate(config, conn, pageNumber, pageSize, sql, page, paras);
         return page;
     }
 
-    void doPaginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, @NotNull Page<Record> page, Object... paras) throws SQLException {
+    void doPaginate(Config config, Connection conn, int pageNumber, int pageSize, String sql, @NotNull Page<Map<String, Object>> page, Object... paras) throws SQLException {
         if (pageNumber < 1 || pageSize < 1) {
             throw new HyacinthException("pageNumber and pageSize must more than 0");
         }
@@ -545,7 +545,7 @@ public class DbPro {
 
         page.setPageNumber(pageNumber).setPageSize(pageSize);
         if (totalRow == 0) {
-            page.setList(new ArrayList<Record>(0)).setTotalPage(0).setTotalRow(0);
+            page.setList(new ArrayList<Map<String, Object>>(0)).setTotalPage(0).setTotalRow(0);
         }
 
         int totalPage = (int) (totalRow / pageSize);
@@ -554,16 +554,16 @@ public class DbPro {
         }
 
         if (pageNumber > totalPage) {
-            page.setList(new ArrayList<Record>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
+            page.setList(new ArrayList<Map<String, Object>>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
         }
 
         // --------
         String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
-        List<Record> list = find(config, conn, pageSql, paras);
+        List<Map<String, Object>> list = find(config, conn, pageSql, paras);
         page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
     }
 
-    boolean save(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+    boolean save(Config config, Connection conn, String tableName, String primaryKey, Map<String, Object> record) throws SQLException {
         String[] pKeys = primaryKey.split(",");
         List<Object> paras = new ArrayList<Object>();
         StringBuilder sql = new StringBuilder();
@@ -585,12 +585,12 @@ public class DbPro {
     /**
      * Get id after save record.
      */
-    private void getGeneratedKey(PreparedStatement pst, Record record, String[] pKeys) throws SQLException {
+    private void getGeneratedKey(PreparedStatement pst, Map<String, Object> record, String[] pKeys) throws SQLException {
         ResultSet rs = pst.getGeneratedKeys();
         for (String pKey : pKeys)
             if (record.get(pKey) == null || config.dialect.isOracle())
                 if (rs.next())
-                    record.set(pKey, rs.getObject(1));
+                    record.put(pKey, rs.getObject(1));
         rs.close();
     }
 
@@ -598,7 +598,7 @@ public class DbPro {
      * Save record.
      * <pre>
      * Example:
-     * Record userRole = new Record().set("user_id", 123).set("role_id", 456);
+     * Map<String, Object> userRole = new Record().set("user_id", 123).set("role_id", 456);
      * DbPro.use().save("user_role", "user_id, role_id", userRole);
      * </pre>
      *
@@ -606,7 +606,7 @@ public class DbPro {
      * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
      * @param record     the record will be saved
      */
-    public boolean save(String tableName, String primaryKey, Record record) {
+    public boolean save(String tableName, String primaryKey, Map<String, Object> record) {
         Connection conn = null;
         try {
             conn = config.getConnection();
@@ -619,13 +619,13 @@ public class DbPro {
     }
 
     /**
-     * @see #save(String, String, Record)
+     * @see #save(String, String, Map)
      */
-    public boolean save(String tableName, Record record) {
+    public boolean save(String tableName, Map<String, Object> record) {
         return save(tableName, config.dialect.getDefaultPrimaryKey(), record);
     }
 
-    boolean update(Config config, Connection conn, String tableName, String primaryKey, Record record) throws SQLException {
+    boolean update(Config config, Connection conn, String tableName, String primaryKey, Map<String, Object> record) throws SQLException {
         String[] pKeys = primaryKey.split(",");
         Object[] ids = new Object[pKeys.length];
 
@@ -653,11 +653,11 @@ public class DbPro {
      * DbPro.use().update("user_role", "user_id, role_id", record);
      * </pre>
      *
-     * @param tableName  the table name of the Record save to
+     * @param tableName  the table name of the Map<String, Object> save to
      * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the Record object
+     * @param record     the Map<String, Object> object
      */
-    public boolean update(String tableName, String primaryKey, Record record) {
+    public boolean update(String tableName, String primaryKey, Map<String, Object> record) {
         Connection conn = null;
         try {
             conn = config.getConnection();
@@ -676,9 +676,9 @@ public class DbPro {
      * DbPro.use().update("user", record);
      * </pre>
      *
-     * @see #update(String, String, Record)
+     * @see #update(String, String, Map)
      */
-    public boolean update(String tableName, Record record) {
+    public boolean update(String tableName, Map<String, Object> record) {
         return update(tableName, config.dialect.getDefaultPrimaryKey(), record);
     }
 
@@ -762,7 +762,7 @@ public class DbPro {
         if (list == null || list.size() == 0)
             return new int[0];
         Object element = list.get(0);
-        if (!(element instanceof Record) && !(element instanceof Model))
+        if (!(element instanceof Map) && !(element instanceof Model))
             throw new IllegalArgumentException("The element in list must be Model or Record.");
         if (batchSize < 1)
             throw new IllegalArgumentException("The batchSize must more than 0.");
@@ -779,7 +779,7 @@ public class DbPro {
         int[] result = new int[size];
         PreparedStatement pst = conn.prepareStatement(sql);
         for (int i = 0; i < size; i++) {
-            Map map = isModel ? ((Model) list.get(i)).getAttrs() : ((Record) list.get(i)).getColumns();
+            Map map = isModel ? ((Model) list.get(i)).getAttrs() : (Map) list.get(i);
             for (int j = 0; j < columnArray.length; j++) {
                 Object value = map.get(columnArray[j]);
                 if (config.dialect.isOracle()) {
@@ -939,16 +939,15 @@ public class DbPro {
      *
      * @param tableName the table name
      */
-    public int[] batchSave(String tableName, List<Record> recordList, int batchSize) {
+    public int[] batchSave(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         if (recordList == null || recordList.size() == 0)
             return new int[0];
 
-        Record record = recordList.get(0);
-        Map<String, Object> cols = record.getColumns();
-        String[] colNames = new String[cols.entrySet().size()];
+        Map<String, Object> record = recordList.get(0);
+        String[] colNames = new String[record.entrySet().size()];
         int index = 0;
         // the same as the iterator in Dialect.forDbSave() to ensure the order of the columns
-        for (Map.Entry<String, Object> e : cols.entrySet())
+        for (Map.Entry<String, Object> e : record.entrySet())
             colNames[index++] = e.getKey();
         String columns = StringTools.join(colNames, ",");
 
@@ -998,18 +997,17 @@ public class DbPro {
      * @param tableName  the table name
      * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
      */
-    public int[] batchUpdate(String tableName, String primaryKey, List<Record> recordList, int batchSize) {
+    public int[] batchUpdate(String tableName, String primaryKey, List<Map<String, Object>> recordList, int batchSize) {
         if (recordList == null || recordList.size() == 0)
             return new int[0];
 
         String[] pKeys = primaryKey.split(",");
         config.dialect.trimPrimaryKeys(pKeys);
 
-        Record record = recordList.get(0);
-        Map<String, Object> cols = record.getColumns();
+        Map<String, Object> record = recordList.get(0);
         List<String> colNames = new ArrayList<String>();
         // the same as the iterator in Dialect.forDbUpdate() to ensure the order of the columns
-        for (Map.Entry<String, Object> e : cols.entrySet()) {
+        for (Map.Entry<String, Object> e : record.entrySet()) {
             String col = e.getKey();
             if (config.dialect.isPrimaryKey(col, pKeys) == false)
                 colNames.add(col);
@@ -1031,7 +1029,7 @@ public class DbPro {
      *
      * @param tableName the table name
      */
-    public int[] batchUpdate(String tableName, List<Record> recordList, int batchSize) {
+    public int[] batchUpdate(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         return batchUpdate(tableName, config.dialect.getDefaultPrimaryKey(), recordList, batchSize);
     }
 

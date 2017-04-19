@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 将ResultSet封装成Record
@@ -26,8 +28,8 @@ public class RecordBuilder {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public static Record build(Config config, ResultSet rs) throws SQLException {
-        Record record = null;
+    public static Map<String, Object> build(Config config, ResultSet rs) throws SQLException {
+        Map<String, Object> data = null;
         // 获取结果集数据结构以及相应列的数据类型
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
@@ -37,12 +39,11 @@ public class RecordBuilder {
         RsKit.bindLabelNamesAndTypes(rsmd, labelNames, types);
 
         if (rs.next()) {
-            record = new Record();
-            record.setColumnsMap(config.container.getColumnsMap());
-            RsKit.fetch(rs, columnCount, labelNames, types, record.getColumns());
+            data = new HashMap<String, Object>();
+            RsKit.fetch(rs, columnCount, labelNames, types, data);
 
         }
-        return record;
+        return data;
     }
 
     /**
@@ -55,8 +56,8 @@ public class RecordBuilder {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public static List<Record> buildList(Config config, ResultSet rs) throws SQLException {
-        List<Record> list = new ArrayList<Record>();
+    public static List<Map<String, Object>> buildList(Config config, ResultSet rs) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
         // 获取结果集数据结构以及相应列的数据类型
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
@@ -66,9 +67,8 @@ public class RecordBuilder {
         RsKit.bindLabelNamesAndTypes(rsmd, labelNames, types);
 
         while (rs.next()) {
-            Record record = new Record();
-            record.setColumnsMap(config.container.getColumnsMap());
-            RsKit.fetch(rs, columnCount, labelNames, types, record.getColumns());
+            Map<String, Object> record = new HashMap<String, Object>();
+            RsKit.fetch(rs, columnCount, labelNames, types, record);
             list.add(record);
         }
         return list;

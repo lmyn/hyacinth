@@ -1,6 +1,5 @@
 package com.github.hyacinth.dialect;
 
-import com.github.hyacinth.Record;
 import com.github.hyacinth.Table;
 
 import java.util.List;
@@ -46,7 +45,7 @@ public class SqlServerDialect extends Dialect {
     }
 
     @Override
-    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras) {
+    public void forDbSaveOrUpdate(String tableName, String[] pKeys, Map<String, Object> record, StringBuilder sql, List<Object> paras) {
 
     }
 }

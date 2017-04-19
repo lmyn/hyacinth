@@ -3,7 +3,6 @@ package test.hyacinth;
 import com.alibaba.fastjson.JSON;
 import com.github.hyacinth.Db;
 import com.github.hyacinth.Page;
-import com.github.hyacinth.Record;
 import com.github.hyacinth.dialect.MysqlDialect;
 import com.github.hyacinth.tools.ClassTools;
 import com.github.hyacinth.generator.Generator;
@@ -12,7 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import test.hyacinth.model.Ad;
 import test.hyacinth.service.impl.TestService;
@@ -94,7 +92,7 @@ public class HyacinthTest {
 
     @Test
     public void test4(){
-        Page<Record> records = Db.paginate(10, 1, Sqls.User2_selectUser22);
+        Page<Map<String, Object>> records = Db.paginate(10, 1, Sqls.User2_selectUser22);
         System.out.println(JSON.toJSONString(records));
     }
 

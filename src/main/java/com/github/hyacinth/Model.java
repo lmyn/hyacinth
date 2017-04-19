@@ -34,7 +34,6 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      */
     private Map<String, Object> attrs = getAttrsMap();
 
-    @Override
     public Map<String, Object> getAttrsMap() {
         Config config = getConfig();
         if (config == null) {
@@ -127,21 +126,6 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     public M put(Model model) {
         attrs.putAll(model.getAttrs());
         return (M) this;
-    }
-
-    /**
-     * @see #put(String, Object)
-     */
-    public M put(Record record) {
-        attrs.putAll(record.getColumns());
-        return (M) this;
-    }
-
-    /**
-     * 将Model转换成Record
-     */
-    public Record toRecord() {
-        return new Record().setColumns(getAttrs());
     }
 
     /**
@@ -333,7 +317,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * <p>
      * 危险!只修操作此Map将会使得调用update方法时出错，因为被修改属性没有记录；您必须使用set方法来对属性进行操作，以便update方法能正确更新对于属性
      */
-    protected Map<String, Object> getAttrs() {
+    public Map<String, Object> getAttrs() {
         return attrs;
     }
 
