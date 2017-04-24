@@ -88,7 +88,7 @@ public class JavaKeyword {
     }
 
     public JavaKeyword addKeyword(String keyword) {
-        if (StringTools.notBlank(keyword)) {
+        if (StringTools.isNotBlank(keyword)) {
             set.add(keyword);
         }
         return this;

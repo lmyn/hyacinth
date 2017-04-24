@@ -31,6 +31,14 @@ public final class StringTools {
     }
 
     /**
+     * 字符串不为 null 而且不为  "" 时返回 true
+     */
+    public static boolean isNotBlank(String str) {
+        return str != null && !"".equals(str.trim());
+    }
+
+
+    /**
      * 首字母变小写
      */
     public static String firstCharToLowerCase(String str) {
@@ -54,22 +62,6 @@ public final class StringTools {
             return new String(arr);
         }
         return str;
-    }
-
-    /**
-     * 字符串不为 null 而且不为  "" 时返回 true
-     */
-    public static boolean notBlank(String str) {
-        return str != null && !"".equals(str.trim());
-    }
-
-    public static boolean notBlank(String... strings) {
-        if (strings == null)
-            return false;
-        for (String str : strings)
-            if (str == null || "".equals(str.trim()))
-                return false;
-        return true;
     }
 
     public static String toCamelCase(String stringWithUnderline) {

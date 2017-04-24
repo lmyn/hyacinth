@@ -119,13 +119,12 @@ public class MdResolve {
         for (String key : SqlCache.rawSqls.asMap().keySet()) {
             StringBuilder sqlBuilder = SqlCache.rawSqls.get(key).getSql();
             //处理sql字块(对原Sql进行处理)
-            int start, end = -1;
+            int start, end;
             while (true) {
-                if ((start = sqlBuilder.indexOf("{{", ++end)) == -1) break;
-                end = sqlBuilder.indexOf("}}");
-                if (end < start) break;
+                if ((start = sqlBuilder.indexOf("${{")) == -1) break;
+                end = sqlBuilder.indexOf("}}", start);
 
-                String refKey = StringTools.firstCharToUpperCase(sqlBuilder.substring(start + 2, end));
+                String refKey = StringTools.firstCharToUpperCase(sqlBuilder.substring(start + 3, end));
                 RawSqls rawSqls = SqlCache.rawSqls.get(refKey);
                 if (rawSqls == null) {
                     rawSqls = SqlCache.rawSqls.get("*" + refKey);

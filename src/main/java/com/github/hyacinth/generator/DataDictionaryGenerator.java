@@ -32,13 +32,13 @@ public class DataDictionaryGenerator {
     }
 
     public void setDataDictionaryOutputDir(String dataDictionaryOutputDir) {
-        if (StringTools.notBlank(dataDictionaryOutputDir)) {
+        if (StringTools.isNotBlank(dataDictionaryOutputDir)) {
             this.dataDictionaryOutputDir = dataDictionaryOutputDir;
         }
     }
 
     public void setDataDictionaryFileName(String dataDictionaryFileName) {
-        if (StringTools.notBlank(dataDictionaryFileName)) {
+        if (StringTools.isNotBlank(dataDictionaryFileName)) {
             this.dataDictionaryFileName = dataDictionaryFileName;
         }
     }
@@ -58,7 +58,7 @@ public class DataDictionaryGenerator {
 
     protected void generateTable(TableMeta tableMeta, StringBuilder ret) {
         ret.append("Table: ").append(tableMeta.name);
-        if (StringTools.notBlank(tableMeta.remarks)) {
+        if (StringTools.isNotBlank(tableMeta.remarks)) {
             ret.append("\tRemarks: ").append(tableMeta.remarks);
         }
         ret.append("\n");
