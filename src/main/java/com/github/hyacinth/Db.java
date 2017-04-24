@@ -489,7 +489,7 @@ public class Db {
     public static void paginate(int pageNumber, int pageSize, SqlKey sqlKey, Page<Map<String, Object>> page, Map<String, Object> paras) {
         List<Object> parasValueList = new ArrayList<Object>();
         String sql = DbKit.sqlBuilder.build(sqlKey.toString(), paras, parasValueList);
-        DbPro.MAIN.paginate(pageNumber, pageSize, sql, page, parasValueList);
+        DbPro.MAIN.paginate(pageNumber, pageSize, sql, page, parasValueList.toArray());
     }
 
     public static ProvidePage<Map<String, Object>> paginate(int pageNumber, int pageSize, SqlKey sqlKey, Object... paras) {
