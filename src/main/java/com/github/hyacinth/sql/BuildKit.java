@@ -147,6 +147,8 @@ public class BuildKit {
                 parasList.add(value);
                 //将参数化表达式替换成sql参数占位符
                 sql.replace(start - 1, end + 1, "?");
+                //重置结束位置
+                end = start;
             } else if (sign == '@') {
                 StringBuilder multipleBuilder = new StringBuilder();
                 //处理数组
@@ -161,6 +163,8 @@ public class BuildKit {
                     multipleBuilder.deleteCharAt(multipleBuilder.length() - 1);
                 }
                 sql.replace(start - 1, end, multipleBuilder.toString());
+                //重置结束位置
+                end = start + multipleBuilder.length();
             }
         }
     }

@@ -118,12 +118,16 @@ public class MdResolve {
         //循环 取所有原Sql
         for (String key : SqlCache.rawSqls.asMap().keySet()) {
             StringBuilder sqlBuilder = SqlCache.rawSqls.get(key).getSql();
+            sqlBuilder = new StringBuilder(sqlBuilder);
             //处理sql字块(对原Sql进行处理)
             int start, end;
             while (true) {
                 if ((start = sqlBuilder.indexOf("${{")) == -1) break;
-                end = sqlBuilder.indexOf("}}", start);
-
+                end = sqlBuilder.indexOf("}}", start + 2);
+                if(end == -1){
+                    LOGGER.error("There is an error in the SQL syntax; {}", sqlBuilder.toString());
+                    break;
+                }
                 String refKey = StringTools.firstCharToUpperCase(sqlBuilder.substring(start + 3, end));
                 RawSqls rawSqls = SqlCache.rawSqls.get(refKey);
                 if (rawSqls == null) {
