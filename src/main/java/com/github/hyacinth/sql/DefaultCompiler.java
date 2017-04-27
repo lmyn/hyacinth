@@ -1,9 +1,13 @@
 package com.github.hyacinth.sql;
 
+import com.github.hyacinth.tools.StringTools;
 import jetbrick.template.JetEngine;
 import jetbrick.template.JetTemplate;
+import jetbrick.template.resolver.GlobalResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 /**
  * jetbrick-template编译器
@@ -42,7 +46,11 @@ public class DefaultCompiler implements TemplateCompiler {
      */
     private static JetEngine getJetEngine() {
         if (jetEngine == null) {
+//            Properties config = new Properties();
+//            config.setProperty("jetx.import.classes", "com.github.hyacinth.tools.StringTools");
             jetEngine = JetEngine.create();
+            GlobalResolver resolver = jetEngine.getGlobalResolver();
+            resolver.registerFunctions(StringTools.class);
         }
         return jetEngine;
     }
