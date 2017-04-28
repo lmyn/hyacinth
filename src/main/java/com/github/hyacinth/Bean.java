@@ -8,6 +8,6 @@ import java.util.Map;
  */
 public interface Bean {
 
-    Map<String, Object> getAttrsMap();
+    Map<String, Object> attrsMap();
 }
 

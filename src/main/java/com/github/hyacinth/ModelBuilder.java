@@ -35,7 +35,7 @@ public class ModelBuilder {
 
         if (rs.next()) {
             model = modelClass.newInstance();
-            RsKit.fetch(rs, columnCount, labelNames, types, model.getAttrs());
+            RsKit.fetch(rs, columnCount, labelNames, types, model.attrsMap());
         }
         return model;
     }
@@ -60,7 +60,7 @@ public class ModelBuilder {
 
         while (rs.next()) {
             M model = modelClass.newInstance();
-            RsKit.fetch(rs, columnCount, labelNames, types, model.getAttrs());
+            RsKit.fetch(rs, columnCount, labelNames, types, model.attrsMap());
             list.add(model);
         }
         return list;

@@ -24,7 +24,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     public static final int FILTER_BY_UPDATE = 1;
 
     public M dao() {
-        attrs = Dao.daoMap;
+        attrsMap = Dao.daoMap;
         modifyFlag = Dao.daoSet;
         return (M) this;
     }
@@ -32,9 +32,9 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     /**
      * 数据承载Map
      */
-    private Map<String, Object> attrs = getAttrsMap();
+    private Map<String, Object> attrsMap = init();
 
-    public Map<String, Object> getAttrsMap() {
+    protected Map<String, Object> init() {
         Config config = getConfig();
         if (config == null) {
             return DbKit.brokenConfig.container.getAttrsMap();
@@ -92,12 +92,12 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         Table table = getMapping();
         // 用于未启动 ActiveRecordPlugin 场景下使用 Model
         if (table == null) {
-            attrs.put(attr, value);
+            attrsMap.put(attr, value);
             getModifyFlag().add(attr);
             return (M) this;
         }
         if (table.hasColumnLabel(attr)) {
-            attrs.put(attr, value);
+            attrsMap.put(attr, value);
             getModifyFlag().add(attr);    // Add modify flag, update() need this flag.
             return (M) this;
         }
@@ -108,7 +108,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * 设置Model属性，此方法不会对model属性进行检查
      */
     public M put(String key, Object value) {
-        attrs.put(key, value);
+        attrsMap.put(key, value);
         return (M) this;
     }
 
@@ -116,7 +116,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @see #put(String, Object)
      */
     public M put(Map<String, Object> map) {
-        attrs.putAll(map);
+        attrsMap.putAll(map);
         return (M) this;
     }
 
@@ -124,7 +124,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @see #put(String, Object)
      */
     public M put(Model model) {
-        attrs.putAll(model.getAttrs());
+        attrsMap.putAll(model.attrsMap());
         return (M) this;
     }
 
@@ -132,14 +132,14 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * 获取属性值
      */
     public <T> T get(String attr) {
-        return (T) (attrs.get(attr));
+        return (T) (attrsMap.get(attr));
     }
 
     /**
      * 获取属性值，为空时返回默认值
      */
     public <T> T get(String attr, Object defaultValue) {
-        Object result = attrs.get(attr);
+        Object result = attrsMap.get(attr);
         return (T) (result != null ? result : defaultValue);
     }
 
@@ -152,55 +152,55 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @param attr 属性名
      */
     public String getStr(String attr) {
-        return (String) attrs.get(attr);
+        return (String) attrsMap.get(attr);
     }
 
     public Integer getInt(String attr) {
-        return (Integer) attrs.get(attr);
+        return (Integer) attrsMap.get(attr);
     }
 
     public Long getLong(String attr) {
-        return (Long) attrs.get(attr);
+        return (Long) attrsMap.get(attr);
     }
 
     public java.math.BigInteger getBigInteger(String attr) {
-        return (java.math.BigInteger) attrs.get(attr);
+        return (java.math.BigInteger) attrsMap.get(attr);
     }
 
     public java.util.Date getDate(String attr) {
-        return (java.util.Date) attrs.get(attr);
+        return (java.util.Date) attrsMap.get(attr);
     }
 
     public Time getTime(String attr) {
-        return (Time) attrs.get(attr);
+        return (Time) attrsMap.get(attr);
     }
 
     public Timestamp getTimestamp(String attr) {
-        return (Timestamp) attrs.get(attr);
+        return (Timestamp) attrsMap.get(attr);
     }
 
     public Double getDouble(String attr) {
-        return (Double) attrs.get(attr);
+        return (Double) attrsMap.get(attr);
     }
 
     public Float getFloat(String attr) {
-        return (Float) attrs.get(attr);
+        return (Float) attrsMap.get(attr);
     }
 
     public Boolean getBoolean(String attr) {
-        return (Boolean) attrs.get(attr);
+        return (Boolean) attrsMap.get(attr);
     }
 
     public java.math.BigDecimal getBigDecimal(String attr) {
-        return (java.math.BigDecimal) attrs.get(attr);
+        return (java.math.BigDecimal) attrsMap.get(attr);
     }
 
     public byte[] getBytes(String attr) {
-        return (byte[]) attrs.get(attr);
+        return (byte[]) attrsMap.get(attr);
     }
 
     public Number getNumber(String attr) {
-        return (Number) attrs.get(attr);
+        return (Number) attrsMap.get(attr);
     }
 
     /**
@@ -317,15 +317,15 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * <p>
      * 危险!只修操作此Map将会使得调用update方法时出错，因为被修改属性没有记录；您必须使用set方法来对属性进行操作，以便update方法能正确更新对于属性
      */
-    public Map<String, Object> getAttrs() {
-        return attrs;
+    public Map<String, Object> attrsMap() {
+        return attrsMap;
     }
 
     /**
      * 获得所有属性名
      */
     public Set<Map.Entry<String, Object>> _getAttrsEntrySet() {
-        return attrs.entrySet();
+        return attrsMap.entrySet();
     }
 
     /**
@@ -341,7 +341,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
 
         StringBuilder sql = new StringBuilder();
         List<Object> paras = new ArrayList<Object>();
-        config.dialect.forModelSave(table, attrs, sql, paras);
+        config.dialect.forModelSave(table, attrsMap, sql, paras);
         return save(config, table, sql, paras);
     }
 
@@ -358,7 +358,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
 
         StringBuilder sql = new StringBuilder();
         List<Object> paras = new ArrayList<Object>();
-        config.dialect.forModelSaveOrUpdate(table, attrs, sql, paras);
+        config.dialect.forModelSaveOrUpdate(table, attrsMap, sql, paras);
         return save(config, table, sql, paras);
     }
 
@@ -401,7 +401,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         Table table = getMapping();
         String[] pKeys = table.getPrimaryKey();
         for (String pKey : pKeys) {
-            Object id = attrs.get(pKey);
+            Object id = attrsMap.get(pKey);
             if (id == null) {
                 throw new HyacinthException("You can't update model without Primary Key, " + pKey + " can not be null.");
             }
@@ -410,7 +410,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         Config config = getConfig();
         StringBuilder sql = new StringBuilder();
         List<Object> paras = new ArrayList<Object>();
-        config.dialect.forModelUpdate(table, attrs, getModifyFlag(), sql, paras);
+        config.dialect.forModelUpdate(table, attrsMap, getModifyFlag(), sql, paras);
 
         if (paras.size() <= 1) {    // Needn't update
             return false;
@@ -467,7 +467,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         String[] pKeys = table.getPrimaryKey();
         Object[] ids = new Object[pKeys.length];
         for (int i = 0; i < pKeys.length; i++) {
-            ids[i] = attrs.get(pKeys[i]);
+            ids[i] = attrsMap.get(pKeys[i]);
             if (ids[i] == null) {
                 throw new HyacinthException("You can't delete model without primary key value, " + pKeys[i] + " is null");
             }
@@ -569,7 +569,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @see #find(SqlKey, Map)
      */
     public List<M> find(SqlKey sqlKey, M model) {
-        return find(sqlKey.toString(), model.getAttrs());
+        return find(sqlKey.toString(), model.attrsMap());
     }
 
     /**
@@ -704,7 +704,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @see #_setAttrs(Map)
      */
     public M _setAttrs(M model) {
-        return (M) _setAttrs(model.getAttrs());
+        return (M) _setAttrs(model.attrsMap());
     }
 
     /**
@@ -723,7 +723,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @see #remove(String...)
      */
     public M remove(String attr) {
-        attrs.remove(attr);
+        attrsMap.remove(attr);
         getModifyFlag().remove(attr);
         return (M) this;
     }
@@ -737,7 +737,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     public M remove(String... attrs) {
         if (attrs != null)
             for (String attr : attrs) {
-                this.attrs.remove(attr);
+                this.attrsMap.remove(attr);
                 this.getModifyFlag().remove(attr);
             }
         return (M) this;
@@ -749,7 +749,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @return 返回model
      */
     public M removeNullValueAttrs() {
-        for (Iterator<Map.Entry<String, Object>> it = attrs.entrySet().iterator(); it.hasNext(); ) {
+        for (Iterator<Map.Entry<String, Object>> it = attrsMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, Object> e = it.next();
             if (e.getValue() == null) {
                 it.remove();
@@ -768,18 +768,18 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
     public M keep(String... attrs) {
         if (attrs != null && attrs.length > 0) {
             Config config = getConfig();
-            Map<String, Object> newAttrs = config.container.getAttrsMap();    // new HashMap<String, Object>(attrs.length);
+            Map<String, Object> newAttrs = config.container.getAttrsMap();    // new HashMap<String, Object>(attrsMap.length);
             Set<String> newModifyFlag = config.container.getModifyFlagSet();    // new HashSet<String>();
             for (String a : attrs) {
-                if (this.attrs.containsKey(a))    // prevent put null value to the newColumns
-                    newAttrs.put(a, this.attrs.get(a));
+                if (this.attrsMap.containsKey(a))    // prevent put null value to the newColumns
+                    newAttrs.put(a, this.attrsMap.get(a));
                 if (this.getModifyFlag().contains(a))
                     newModifyFlag.add(a);
             }
-            this.attrs = newAttrs;
+            this.attrsMap = newAttrs;
             this.modifyFlag = newModifyFlag;
         } else {
-            this.attrs.clear();
+            this.attrsMap.clear();
             this.getModifyFlag().clear();
         }
         return (M) this;
@@ -792,16 +792,16 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @return 返回修改后的model
      */
     public M keep(String attr) {
-        if (attrs.containsKey(attr)) {    // prevent put null value to the newColumns
-            Object keepIt = attrs.get(attr);
+        if (attrsMap.containsKey(attr)) {    // prevent put null value to the newColumns
+            Object keepIt = attrsMap.get(attr);
             boolean keepFlag = getModifyFlag().contains(attr);
-            attrs.clear();
+            attrsMap.clear();
             getModifyFlag().clear();
-            attrs.put(attr, keepIt);
+            attrsMap.put(attr, keepIt);
             if (keepFlag)
                 getModifyFlag().add(attr);
         } else {
-            attrs.clear();
+            attrsMap.clear();
             getModifyFlag().clear();
         }
         return (M) this;
@@ -813,7 +813,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * @return 返回修改后的model
      */
     public M clear() {
-        attrs.clear();
+        attrsMap.clear();
         getModifyFlag().clear();
         return (M) this;
     }
@@ -822,7 +822,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         boolean first = true;
-        for (Map.Entry<String, Object> e : attrs.entrySet()) {
+        for (Map.Entry<String, Object> e : attrsMap.entrySet()) {
             if (first)
                 first = false;
             else
@@ -844,18 +844,18 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
             return false;
         if (o == this)
             return true;
-        return this.attrs.equals(((Model) o).attrs);
+        return this.attrsMap.equals(((Model) o).attrsMap);
     }
 
     public int hashCode() {
-        return (attrs == null ? 0 : attrs.hashCode()) ^ (getModifyFlag() == null ? 0 : getModifyFlag().hashCode());
+        return (attrsMap == null ? 0 : attrsMap.hashCode()) ^ (getModifyFlag() == null ? 0 : getModifyFlag().hashCode());
     }
 
     /**
      * 获取所有属性名
      */
     public String[] _getAttrNames() {
-        Set<String> attrNameSet = attrs.keySet();
+        Set<String> attrNameSet = attrsMap.keySet();
         return attrNameSet.toArray(new String[attrNameSet.size()]);
     }
 
@@ -863,7 +863,7 @@ public abstract class Model<M extends Model> implements Bean, Serializable {
      * 获取所有值（不包括属性名称）
      */
     public Object[] _getAttrValues() {
-        Collection<Object> attrValueCollection = attrs.values();
+        Collection<Object> attrValueCollection = attrsMap.values();
         return attrValueCollection.toArray(new Object[attrValueCollection.size()]);
     }
 

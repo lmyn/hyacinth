@@ -779,7 +779,7 @@ public class DbPro {
         int[] result = new int[size];
         PreparedStatement pst = conn.prepareStatement(sql);
         for (int i = 0; i < size; i++) {
-            Map map = isModel ? ((Model) list.get(i)).getAttrs() : (Map) list.get(i);
+            Map map = isModel ? ((Model) list.get(i)).attrsMap() : (Map) list.get(i);
             for (int j = 0; j < columnArray.length; j++) {
                 Object value = map.get(columnArray[j]);
                 if (config.dialect.isOracle()) {
@@ -919,10 +919,10 @@ public class DbPro {
             return new int[0];
 
         Model model = modelList.get(0);
-        Map<String, Object> attrs = model.getAttrs();
+        Map<String, Object> attrs = model.attrsMap();
         String[] attrNames = new String[attrs.entrySet().size()];
         int index = 0;
-        // the same as the iterator in Dialect.forModelSave() to ensure the order of the attrs
+        // the same as the iterator in Dialect.forModelSave() to ensure the order of the attrsMap
         for (Map.Entry<String, Object> e : attrs.entrySet())
             attrNames[index++] = e.getKey();
         String columns = StringTools.join(attrNames, ",");
@@ -959,7 +959,7 @@ public class DbPro {
     }
 
     /**
-     * Batch update models using the attrs names of the first model in modelList.
+     * Batch update models using the attrsMap names of the first model in modelList.
      * Ensure all the models can use the same sql as the first model.
      */
     public int[] batchUpdate(List<? extends Model> modelList, int batchSize) {
@@ -969,9 +969,9 @@ public class DbPro {
         Model model = modelList.get(0);
         Table table = TableMapping.me().getMapping(model.getClass());
         String[] pKeys = table.getPrimaryKey();
-        Map<String, Object> attrs = model.getAttrs();
+        Map<String, Object> attrs = model.attrsMap();
         List<String> attrNames = new ArrayList<String>();
-        // the same as the iterator in Dialect.forModelSave() to ensure the order of the attrs
+        // the same as the iterator in Dialect.forModelSave() to ensure the order of the attrsMap
         for (Map.Entry<String, Object> e : attrs.entrySet()) {
             String attr = e.getKey();
             if (config.dialect.isPrimaryKey(attr, pKeys) == false)
@@ -981,7 +981,7 @@ public class DbPro {
             attrNames.add(pKey);
         String columns = StringTools.join(attrNames.toArray(new String[attrNames.size()]), ",");
 
-        // update all attrs of the model not use the midifyFlag of every single model
+        // update all attrsMap of the model not use the midifyFlag of every single model
         Set<String> modifyFlag = attrs.keySet();    // model.getModifyFlag();
 
         StringBuilder sql = new StringBuilder();
