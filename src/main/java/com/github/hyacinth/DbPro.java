@@ -947,8 +947,9 @@ public class DbPro {
         String[] colNames = new String[record.entrySet().size()];
         int index = 0;
         // the same as the iterator in Dialect.forDbSave() to ensure the order of the columns
-        for (Map.Entry<String, Object> e : record.entrySet())
+        for (Map.Entry<String, Object> e : record.entrySet()) {
             colNames[index++] = e.getKey();
+        }
         String columns = StringTools.join(colNames, ",");
 
         String[] pKeysNoUse = new String[0];

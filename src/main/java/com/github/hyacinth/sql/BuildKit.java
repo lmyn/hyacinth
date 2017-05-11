@@ -10,9 +10,7 @@ import net.sf.jsqlparser.statement.select.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Sql生成器，主要用于自动生成查询总条数的Sql语句
@@ -135,7 +133,6 @@ public class BuildKit {
             end = sql.indexOf("}", start + 1);
 
             if (start == -1 || end == -1) break;
-            //下一个动态参数扫描的起始位置
 
             //获取参数变量值
             String keyStr = sql.substring(start + 1, end).trim();
@@ -150,19 +147,31 @@ public class BuildKit {
                 //重置结束位置
                 end = start;
             } else if (sign == '@') {
-                StringBuilder multipleBuilder = new StringBuilder();
-                //处理数组
-                if (value != null && value.getClass().isArray()) {
+                if (value == null) {
+                    LOGGER.error("@{{}} The parameter cannot be empty!", keyStr);
+                    continue;
+                }
+                StringBuilder multipleBuilder = new StringBuilder("(");
+                if (value.getClass().isArray()) { //数组
                     Object[] objArray = (Object[]) value;
                     for (int i = 0; i < objArray.length; i++) {
                         parasList.add(objArray[i]);
                         multipleBuilder.append("?,");
                     }
+                } else if (value instanceof Collection) { //集合
+                    Iterator iterator = ((Collection) value).iterator();
+                    while (iterator.hasNext()) {
+                        parasList.add(iterator.next());
+                        multipleBuilder.append("?,");
+                    }
+                } else {
+                    LOGGER.error("@{{}} The parameter must be an array or collection!", keyStr);
+                    continue;
                 }
                 if (multipleBuilder.length() > 0) {
-                    multipleBuilder.deleteCharAt(multipleBuilder.length() - 1);
+                    multipleBuilder.deleteCharAt(multipleBuilder.length() - 1).append(")");
                 }
-                sql.replace(start - 1, end, multipleBuilder.toString());
+                sql.replace(start - 1, end + 1, multipleBuilder.toString());
                 //重置结束位置
                 end = start + multipleBuilder.length();
             }
