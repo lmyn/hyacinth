@@ -7,6 +7,10 @@ import com.github.hyacinth.tools.StringTools;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 生成Sql映射文件
@@ -91,7 +95,7 @@ public class SqlsGenerator {
         genImport(ret);
         genClassDefine(ret);
 
-        for (String key : SqlCache.rawSqls.asMap().keySet()) {
+        for (String key : getOrderlyKey()) {
             RawSqls rawSqls = SqlCache.rawSqls.get(key);
             String comment = rawSqls.getComment();
             if (comment != null) {
@@ -108,6 +112,24 @@ public class SqlsGenerator {
         ret.append(String.format("}%n"));
 
         writeToFile(ret.toString());
+    }
+
+    /**
+     * 获取有序的Key
+     *
+     * @return key Set
+     */
+    private List<String> getOrderlyKey() {
+        //获取所有的key list
+        List<String> list = new ArrayList<String>(SqlCache.rawSqls.asMap().keySet());
+//        List<String> temp = new ArrayList<String>();
+//        for (String key : list) {
+//            //替换静态Sql key前置*号
+//            temp.add(key.replace("*", ""));
+//        }
+        //排序
+        Collections.sort(list);
+        return list;
     }
 
 
