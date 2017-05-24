@@ -25,6 +25,7 @@ public class DbPro {
     private static final Map<String, DbPro> map = new HashMap<String, DbPro>();
 
     /**
+     * 初始化
      * for DbKit.addConfig(configName)
      */
     static void init(String configName) {
@@ -33,7 +34,7 @@ public class DbPro {
     }
 
     /**
-     * for DbKit.removeConfig(configName)
+     * 移除配置 DbKit.removeConfig(configName)
      */
     static void removeDbProWithConfig(String configName) {
         if (MAIN != null && MAIN.config.getName().equals(configName)) {
@@ -108,12 +109,11 @@ public class DbPro {
     }
 
     /**
-     * Execute sql query and return the first result. I recommend add "limit 1" in your sql.
+     * 执行sql查询，返回单个值或多个值数组
      *
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
-     * @return Object[] if your sql has select more than one column,
-     * and it return Object if your sql has select only one column.
+     * @param sql   sql语句
+     * @param paras 参数集
+     * @return T
      */
     public <T> T queryFirst(String sql, Object... paras) {
         List<T> result = query(sql, paras);
@@ -121,7 +121,6 @@ public class DbPro {
     }
 
     /**
-     * @param sql an SQL statement
      * @see #queryFirst(String, Object...)
      */
     public <T> T queryFirst(String sql) {
@@ -130,7 +129,32 @@ public class DbPro {
         return (result.size() > 0 ? result.get(0) : null);
     }
 
-    // 26 queryXxx method below -----------------------------------------------
+    /**
+     * 查询单列
+     *
+     * @param sql   sql语句
+     * @param paras 参数
+     * @return <T> T
+     * @see #queryColumn(Config, Connection, String, Object...)
+     */
+    public <T> T queryColumn(String sql, Object... paras) {
+        Connection conn = null;
+        try {
+            conn = config.getConnection();
+            return queryColumn(config, conn, sql, paras);
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            config.close(conn);
+        }
+    }
+
+    /**
+     * @see #queryColumn(String, Object...)
+     */
+    public <T> T queryColumn(String sql) {
+        return queryColumn(sql, DbKit.NULL_PARA_ARRAY);
+    }
 
     <T> T queryColumn(Config config, Connection conn, String sql, Object... paras) throws SQLException {
         PreparedStatement pst = conn.prepareStatement(sql);
@@ -145,28 +169,10 @@ public class DbPro {
     }
 
     /**
-     * Execute sql query just return one column.
-     *
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
-     * @return <T> T
+     * 以下26个方法，用于获取指定Java类型的数据
+     * <p>
+     * String,int,long,bigInteger,date,time,timestamp,double,float,boolean,bytes,number
      */
-    public <T> T queryColumn(String sql, Object... paras) {
-        Connection conn = null;
-        try {
-            conn = config.getConnection();
-            return queryColumn(config, conn, sql, paras);
-        } catch (Exception e) {
-            throw new HyacinthException(e);
-        } finally {
-            config.close(conn);
-        }
-    }
-
-    public <T> T queryColumn(String sql) {
-        return queryColumn(sql, DbKit.NULL_PARA_ARRAY);
-    }
-
     public String queryStr(String sql, Object... paras) {
         return (String) queryColumn(sql, paras);
     }
@@ -270,27 +276,14 @@ public class DbPro {
     public Number queryNumber(String sql) {
         return (Number) queryColumn(sql, DbKit.NULL_PARA_ARRAY);
     }
-    // 26 queryXxx method under -----------------------------------------------
 
     /**
-     * Execute sql update
-     */
-    int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
-        PreparedStatement pst = conn.prepareStatement(sql);
-        config.dialect.fillStatement(pst, paras);
-        int result = pst.executeUpdate();
-        DbKit.close(pst);
-        return result;
-    }
-
-    /**
-     * Execute update, insert or delete sql statement.
+     * 执行insert, update, delete语句
      *
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
-     * @return either the row count for <code>INSERT</code>, <code>UPDATE</code>,
-     * or <code>DELETE</code> statements, or 0 for SQL statements
-     * that return nothing
+     * @param sql   sql语句
+     * @param paras 参数
+     * @return 返回受影响行数
+     * @see #update(Config, Connection, String, Object...)
      */
     public int update(String sql, Object... paras) {
         Connection conn = null;
@@ -305,23 +298,23 @@ public class DbPro {
     }
 
     /**
-     * @param sql an SQL statement
      * @see #update(String, Object...)
      */
     public int update(String sql) {
         return update(sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    List<Map<String, Object>> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    int update(Config config, Connection conn, String sql, Object... paras) throws SQLException {
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);
-        ResultSet rs = pst.executeQuery();
-        List<Map<String, Object>> result = RecordBuilder.buildList(config, rs);
-        DbKit.close(rs, pst);
+        int result = pst.executeUpdate();
+        DbKit.close(pst);
         return result;
     }
 
     /**
+     * 查询方法
+     *
      * @see #find(Config, Connection, String, Object...)
      */
     public List<Map<String, Object>> find(String sql, Object... paras) {
@@ -337,28 +330,28 @@ public class DbPro {
     }
 
     /**
-     * @param sql the sql statement
      * @see #find(String, Object...)
      */
     public List<Map<String, Object>> find(String sql) {
         return find(sql, DbKit.NULL_PARA_ARRAY);
     }
 
-    Map<String, Object> findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+    List<Map<String, Object>> find(Config config, Connection conn, String sql, Object... paras) throws SQLException {
         PreparedStatement pst = conn.prepareStatement(sql);
         config.dialect.fillStatement(pst, paras);
         ResultSet rs = pst.executeQuery();
-        Map<String, Object> record = RecordBuilder.build(config, rs);
+        List<Map<String, Object>> result = RecordBuilder.buildList(config, rs);
         DbKit.close(rs, pst);
-        return record;
+        return result;
     }
 
     /**
-     * Find first record. I recommend add "limit 1" in your sql.
+     * 查询第一条记录
      *
-     * @param sql   an SQL statement that may contain one or more '?' IN parameter placeholders
-     * @param paras the parameters of sql
-     * @return the Map<String, Object> object
+     * @param sql   sql语句
+     * @param paras 参数
+     * @return Map<String, Object> object
+     * @see #findFirst(Config, Connection, String, Object...)
      */
     public Map<String, Object> findFirst(String sql, Object... paras) {
         Connection conn = null;
@@ -373,38 +366,46 @@ public class DbPro {
     }
 
     /**
-     * @param sql an SQL statement
      * @see #findFirst(String, Object...)
      */
     public Map<String, Object> findFirst(String sql) {
         return findFirst(sql, DbKit.NULL_PARA_ARRAY);
     }
 
+    Map<String, Object> findFirst(Config config, Connection conn, String sql, Object... paras) throws SQLException {
+        PreparedStatement pst = conn.prepareStatement(sql);
+        config.dialect.fillStatement(pst, paras);
+        ResultSet rs = pst.executeQuery();
+        Map<String, Object> record = RecordBuilder.build(config, rs);
+        DbKit.close(rs, pst);
+        return record;
+    }
+
     /**
-     * Find record by id with default primary key.
+     * 根据主键查询. 默认主键列名称为id
      * <pre>
-     * Example:
+     * 示例:
      * Map<String, Object> user = DbPro.use().findById("user", 15);
      * </pre>
      *
-     * @param tableName the table name of the table
-     * @param idValue   the id value of the record
+     * @param tableName 表名
+     * @param idValue   主键值
      */
     public Map<String, Object> findById(String tableName, Object idValue) {
         return findById(tableName, config.dialect.getDefaultPrimaryKey(), idValue);
     }
 
     /**
-     * Find record by id.
+     * 根据主键查询.
      * <pre>
-     * Example:
+     * 示例:
      * Map<String, Object> user = DbPro.use().findById("user", "user_id", 123);
      * Map<String, Object> userRole = DbPro.use().findById("user_role", "user_id, role_id", 123, 456);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param idValue    the id value of the record, it can be composite id values
+     * @param tableName  表名
+     * @param primaryKey 主键列名，复合主键的情况用","隔开
+     * @param idValue    主键值
      */
     public Map<String, Object> findById(String tableName, String primaryKey, Object... idValue) {
         String[] pKeys = primaryKey.split(",");
@@ -417,32 +418,32 @@ public class DbPro {
     }
 
     /**
-     * Delete record by id with default primary key.
+     * 根据主键删除，默认主键列名称为id
      * <pre>
-     * Example:
+     * 示例:
      * DbPro.use().deleteById("user", 15);
      * </pre>
      *
-     * @param tableName the table name of the table
-     * @param idValue   the id value of the record
-     * @return true if delete succeed otherwise false
+     * @param tableName 表名
+     * @param idValue   主键值
+     * @return boolean
      */
     public boolean deleteById(String tableName, Object idValue) {
         return deleteById(tableName, config.dialect.getDefaultPrimaryKey(), idValue);
     }
 
     /**
-     * Delete record by id.
+     * 根据主键删除
      * <pre>
-     * Example:
+     * 示例:
      * DbPro.use().deleteById("user", "user_id", 15);
      * DbPro.use().deleteById("user_role", "user_id, role_id", 123, 456);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param idValue    the id value of the record, it can be composite id values
-     * @return true if delete succeed otherwise false
+     * @param tableName  表名
+     * @param primaryKey 主键列名，复合主键的情况用","隔开
+     * @param idValue    主键值
+     * @return boolean
      */
     public boolean deleteById(String tableName, String primaryKey, Object... idValue) {
         String[] pKeys = primaryKey.split(",");
@@ -454,16 +455,16 @@ public class DbPro {
     }
 
     /**
-     * Delete record.
+     * 根据记录行删除
      * <pre>
-     * Example:
+     * 示例:
      * boolean succeed = DbPro.use().delete("user", "id", user);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the record
-     * @return true if delete succeed otherwise false
+     * @param tableName  表名
+     * @param primaryKey 主键列名，复合主键的情况用","隔开
+     * @param record     记录行
+     * @return boolean
      */
     public boolean delete(String tableName, String primaryKey, Map<String, Object> record) {
         String[] pKeys = primaryKey.split(",");
@@ -482,7 +483,7 @@ public class DbPro {
 
     /**
      * <pre>
-     * Example:
+     * 示例:
      * boolean succeed = DbPro.use().delete("user", user);
      * </pre>
      *
@@ -501,11 +502,10 @@ public class DbPro {
      * @param sql        sql语句
      * @param page       自定义的page对象
      * @param paras      参数列表
-     * @return the Page object
      * @see #doPaginate(Config, Connection, int, int, String, Page, Object...)
      */
     public void paginate(int pageNumber, int pageSize, String sql, @NotNull Page<Map<String, Object>> page, Object... paras) {
-        if(page == null){
+        if (page == null) {
             page = new ProvidePage<Map<String, Object>>();
         }
         Connection conn = null;
@@ -557,7 +557,6 @@ public class DbPro {
             page.setList(new ArrayList<Map<String, Object>>(0)).setTotalPage(totalPage).setTotalRow((int) totalRow);
         }
 
-        // --------
         String pageSql = config.dialect.forPaginate(pageNumber, pageSize, sql);
         List<Map<String, Object>> list = find(config, conn, pageSql, paras);
         page.setList(list).setTotalPage(totalPage).setTotalRow((int) totalRow);
@@ -583,7 +582,7 @@ public class DbPro {
     }
 
     /**
-     * Get id after save record.
+     * 新增记录之后获取主键值记录
      */
     private void getGeneratedKey(PreparedStatement pst, Map<String, Object> record, String[] pKeys) throws SQLException {
         ResultSet rs = pst.getGeneratedKeys();
@@ -595,16 +594,16 @@ public class DbPro {
     }
 
     /**
-     * Save record.
+     * 自定义主键列保存.
      * <pre>
-     * Example:
+     * 示例:
      * Map<String, Object> userRole = new Record().set("user_id", 123).set("role_id", 456);
      * DbPro.use().save("user_role", "user_id, role_id", userRole);
      * </pre>
      *
-     * @param tableName  the table name of the table
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the record will be saved
+     * @param tableName  表名
+     * @param primaryKey 主键列名，复合主键的情况用","隔开
+     * @param record     Map<String, Object>
      */
     public boolean save(String tableName, String primaryKey, Map<String, Object> record) {
         Connection conn = null;
@@ -619,6 +618,8 @@ public class DbPro {
     }
 
     /**
+     * 默认主键列保存
+     *
      * @see #save(String, String, Map)
      */
     public boolean save(String tableName, Map<String, Object> record) {
@@ -647,15 +648,15 @@ public class DbPro {
     }
 
     /**
-     * Update Record.
+     * 自定义主键列更新.
      * <pre>
-     * Example:
+     * 示例:
      * DbPro.use().update("user_role", "user_id, role_id", record);
      * </pre>
      *
-     * @param tableName  the table name of the Map<String, Object> save to
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
-     * @param record     the Map<String, Object> object
+     * @param tableName  表名
+     * @param primaryKey 主键列名，复合主键的情况用","隔开
+     * @param record     Map<String, Object>
      */
     public boolean update(String tableName, String primaryKey, Map<String, Object> record) {
         Connection conn = null;
@@ -670,9 +671,9 @@ public class DbPro {
     }
 
     /**
-     * Update record with default primary key.
+     * 默认主键列更新
      * <pre>
-     * Example:
+     * 示例:
      * DbPro.use().update("user", record);
      * </pre>
      *
@@ -726,16 +727,16 @@ public class DbPro {
     }
 
     /**
-     * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
+     * 批量执行 insert,update,delete 语句
      * <pre>
-     * Example:
+     * 示例:
      * String sql = "insert into user(name, cash) values(?, ?)";
      * int[] result = DbPro.use().batch(sql, new Object[][]{{"James", 888}, {"zhanjin", 888}});
      * </pre>
      *
-     * @param sql   The SQL to execute.
-     * @param paras An array of query replacement parameters.  Each row in this array is one set of batch replacement values.
-     * @return The number of rows updated per statement
+     * @param sql   sql语句
+     * @param paras 参数数组
+     * @return 操作行数
      */
     public int[] batch(String sql, Object[][] paras, int batchSize) {
         Connection conn = null;
@@ -812,18 +813,18 @@ public class DbPro {
     }
 
     /**
-     * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
+     * 批量执行 insert,update,delete 语句
      * <pre>
-     * Example:
+     * 示例:
      * String sql = "insert into user(name, cash) values(?, ?)";
      * int[] result = DbPro.use().batch(sql, "name, cash", modelList, 500);
      * </pre>
      *
-     * @param sql               The SQL to execute.
-     * @param columns           the columns need be processed by sql.
-     * @param modelOrRecordList model or record object list.
-     * @param batchSize         batch size.
-     * @return The number of rows updated per statement
+     * @param sql               sql语句
+     * @param columns           待处理的属性字段，多个用","号分隔
+     * @param modelOrRecordList List<Model> 或者 List<Map>
+     * @param batchSize         单次操作行数
+     * @return 操作记录数
      */
     public int[] batch(String sql, String columns, List modelOrRecordList, int batchSize) {
         Connection conn = null;
@@ -879,15 +880,15 @@ public class DbPro {
     }
 
     /**
-     * Execute a batch of SQL INSERT, UPDATE, or DELETE queries.
+     * 批量执行 insert,update,delete 语句
      * <pre>
-     * Example:
+     * 示例:
      * int[] result = DbPro.use().batch(sqlList, 500);
      * </pre>
      *
-     * @param sqlList   The SQL list to execute.
-     * @param batchSize batch size.
-     * @return The number of rows updated per statement
+     * @param sqlList   sqls
+     * @param batchSize 批量操作最大行数
+     * @return 操作记录数
      */
     public int[] batch(List<String> sqlList, int batchSize) {
         Connection conn = null;
@@ -911,8 +912,11 @@ public class DbPro {
     }
 
     /**
-     * Batch save models using the "insert into ..." sql generated by the first model in modelList.
-     * Ensure all the models can use the same sql as the first model.
+     * 批量保存Model
+     *
+     * @param modelList model list
+     * @param batchSize 批量操作最大行数
+     * @return 操作记录数
      */
     public int[] batchSave(List<? extends Model> modelList, int batchSize) {
         if (modelList == null || modelList.size() == 0)
@@ -934,10 +938,12 @@ public class DbPro {
     }
 
     /**
-     * Batch save records using the "insert into ..." sql generated by the first record in recordList.
-     * Ensure all the record can use the same sql as the first record.
+     * 批量保存
      *
-     * @param tableName the table name
+     * @param tableName  表名
+     * @param recordList List<Map>
+     * @param batchSize  批量操作最大行数
+     * @return 操作记录数
      */
     public int[] batchSave(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         if (recordList == null || recordList.size() == 0)
@@ -960,8 +966,11 @@ public class DbPro {
     }
 
     /**
-     * Batch update models using the attrsMap names of the first model in modelList.
-     * Ensure all the models can use the same sql as the first model.
+     * 批量更新Model
+     *
+     * @param modelList 记录行集合
+     * @param batchSize 批量操作最大行数
+     * @return 操作记录数
      */
     public int[] batchUpdate(List<? extends Model> modelList, int batchSize) {
         if (modelList == null || modelList.size() == 0)
@@ -992,11 +1001,13 @@ public class DbPro {
     }
 
     /**
-     * Batch update records using the columns names of the first record in recordList.
-     * Ensure all the records can use the same sql as the first record.
+     * 自定义主键批量更新
      *
-     * @param tableName  the table name
-     * @param primaryKey the primary key of the table, composite primary key is separated by comma character: ","
+     * @param tableName  表名
+     * @param primaryKey 主键列名，复合主键用","号分隔
+     * @param recordList 记录行集合
+     * @param batchSize  批量操作最大行数
+     * @return 操作记录数
      */
     public int[] batchUpdate(String tableName, String primaryKey, List<Map<String, Object>> recordList, int batchSize) {
         if (recordList == null || recordList.size() == 0)
@@ -1025,10 +1036,12 @@ public class DbPro {
     }
 
     /**
-     * Batch update records with default primary key, using the columns names of the first record in recordList.
-     * Ensure all the records can use the same sql as the first record.
+     * 默认主键批量更新
      *
-     * @param tableName the table name
+     * @param tableName  表名
+     * @param recordList 记录行集合
+     * @param batchSize  批量操作最大行数
+     * @return 操作记录数
      */
     public int[] batchUpdate(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         return batchUpdate(tableName, config.dialect.getDefaultPrimaryKey(), recordList, batchSize);

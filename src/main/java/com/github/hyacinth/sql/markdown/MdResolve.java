@@ -45,7 +45,8 @@ public class MdResolve {
         LinkedList<String> lineCommentList = new LinkedList<String>();
         BufferedReader bufferedReader = null;
         try {
-            bufferedReader = new BufferedReader(new FileReader(file));
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "UTF-8");
+            bufferedReader = new BufferedReader(isr);
             String line;
             String tempSqlKey;
             while ((line = bufferedReader.readLine()) != null) {
