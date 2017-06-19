@@ -147,7 +147,8 @@ public class MetaBuilder {
      */
     protected ResultSet getTablesResultSet() throws SQLException {
         String schemaPattern = dialect instanceof OracleDialect ? dbMeta.getUserName() : null;
-        return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE", "VIEW"});
+//        return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE", "VIEW"});
+        return dbMeta.getTables(conn.getCatalog(), schemaPattern, null, new String[]{"TABLE"});
     }
 
     protected void buildTableNames(List<TableMeta> ret) throws SQLException {
@@ -203,7 +204,7 @@ public class MetaBuilder {
             primaryKey += rs.getString("COLUMN_NAME");
         }
         if (StringTools.isBlank(primaryKey)) {
-            throw new RuntimeException("primaryKey required by active record pattern");
+            throw new RuntimeException("PrimaryKey required by active record pattern; table:" + tableMeta.name);
         }
         tableMeta.primaryKey = primaryKey;
         rs.close();
