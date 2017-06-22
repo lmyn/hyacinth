@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Sql生成器，主要用于自动生成查询总条数的Sql语句
@@ -36,6 +37,71 @@ public class BuildKit {
      * @return count fixed
      */
     public static String buildTotalSql(String sql) {
+        //处理UNION、UNION ALL 的情况，需要求UNION部分的sql用（号包起来
+        if (sql.startsWith("(")) {
+            return newTotalSql(sql);
+        }
+
+        StringBuilder sqlBuilder = new StringBuilder(sql);
+        String lowerCaseSql = sql.toLowerCase();
+        int selectIndex = 6, fromIndex = 4;
+        while (true) {
+            fromIndex = lowerCaseSql.indexOf("from", fromIndex);
+            char lastChar = lowerCaseSql.charAt(fromIndex - 1);
+            char nextChar = lowerCaseSql.charAt(fromIndex + 4);
+            while (!((lastChar == ' ' || lastChar == ')') && (nextChar == ' ' || nextChar == '('))) {
+                fromIndex = lowerCaseSql.indexOf("from", fromIndex + 3);
+                lastChar = lowerCaseSql.charAt(fromIndex - 1);
+                nextChar = lowerCaseSql.charAt(fromIndex + 4);
+            }
+            selectIndex = lowerCaseSql.indexOf("select", selectIndex);
+            lastChar = lowerCaseSql.charAt(selectIndex - 1);
+            nextChar = lowerCaseSql.charAt(selectIndex + 6);
+            while (!((lastChar == ' ' || lastChar == '(') && nextChar == ' ')) {
+                selectIndex = lowerCaseSql.indexOf("select", selectIndex + 5);
+                lastChar = lowerCaseSql.charAt(selectIndex - 1);
+                nextChar = lowerCaseSql.charAt(selectIndex + 6);
+            }
+            if (selectIndex == -1 || selectIndex > fromIndex) {
+                break;
+            }
+            fromIndex = fromIndex + 3;
+            selectIndex = selectIndex + 5;
+        }
+
+        int orderIndex = lowerCaseSql.lastIndexOf("order ");
+        if ((orderIndex > lowerCaseSql.lastIndexOf(")"))
+                && (lowerCaseSql.charAt(orderIndex - 1) == ' ' || lowerCaseSql.charAt(orderIndex - 1) == ')')) {
+            sqlBuilder.delete(orderIndex, lowerCaseSql.length() - 1);
+        }
+        sqlBuilder = sqlBuilder.replace(6, fromIndex, " COUNT(*) AS total ");
+
+        return sqlBuilder.toString();
+    }
+
+
+    public static void main(String[] args) {
+
+        String sql = "select (select (select iselectd from tafrombselectle4) as t3 from tafromble3) as tfrom1, (select * from table2) as t1 from table1 WHERE id = (select id from table4 order by abc limit 1)order by likjux;";
+        System.out.println(buildTotalSql(sql));
+
+        long end, start = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            buildTotalSql(sql);
+        }
+
+        end = System.currentTimeMillis();
+        System.out.println(end - start);
+
+        start = System.currentTimeMillis();
+        for(int i =0; i< 100000; i++){
+            buildTotalSql2(sql);
+        }
+        end = System.currentTimeMillis();
+        System.out.println(end - start);
+    }
+
+    public static String buildTotalSql2(String sql) {
         Select select = parserSqlforSelect(sql);
         if (select == null) {
             throw new HyacinthException("Total SQL generated failure");
