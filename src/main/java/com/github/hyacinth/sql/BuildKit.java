@@ -47,6 +47,9 @@ public class BuildKit {
         int selectIndex = 6, fromIndex = 4;
         while (true) {
             fromIndex = lowerCaseSql.indexOf("from", fromIndex);
+            if (fromIndex == -1) {
+                throw new IllegalArgumentException("SQL syntax errors！\n" + sql);
+            }
             char lastChar = lowerCaseSql.charAt(fromIndex - 1);
             char nextChar = lowerCaseSql.charAt(fromIndex + 4);
             while (!((lastChar == ' ' || lastChar == ')') && (nextChar == ' ' || nextChar == '('))) {
@@ -55,6 +58,9 @@ public class BuildKit {
                 nextChar = lowerCaseSql.charAt(fromIndex + 4);
             }
             selectIndex = lowerCaseSql.indexOf("select", selectIndex);
+            if (selectIndex == -1) {
+                break;
+            }
             lastChar = lowerCaseSql.charAt(selectIndex - 1);
             nextChar = lowerCaseSql.charAt(selectIndex + 6);
             while (!((lastChar == ' ' || lastChar == '(') && nextChar == ' ')) {
@@ -62,16 +68,15 @@ public class BuildKit {
                 lastChar = lowerCaseSql.charAt(selectIndex - 1);
                 nextChar = lowerCaseSql.charAt(selectIndex + 6);
             }
-            if (selectIndex == -1 || selectIndex > fromIndex) {
+            if (selectIndex > fromIndex) {
                 break;
             }
             fromIndex = fromIndex + 3;
             selectIndex = selectIndex + 5;
         }
 
-        int orderIndex = lowerCaseSql.lastIndexOf("order ");
-        if ((orderIndex > lowerCaseSql.lastIndexOf(")"))
-                && (lowerCaseSql.charAt(orderIndex - 1) == ' ' || lowerCaseSql.charAt(orderIndex - 1) == ')')) {
+        int orderIndex = lowerCaseSql.lastIndexOf("order by ");
+        if (orderIndex > lowerCaseSql.lastIndexOf(")")) {
             sqlBuilder.delete(orderIndex, lowerCaseSql.length() - 1);
         }
         sqlBuilder = sqlBuilder.replace(6, fromIndex, " COUNT(*) AS total ");
@@ -79,26 +84,26 @@ public class BuildKit {
         return sqlBuilder.toString();
     }
 
-
     public static void main(String[] args) {
 
-        String sql = "select (select (select iselectd from tafrombselectle4) as t3 from tafromble3) as tfrom1, (select * from table2) as t1 from table1 WHERE id = (select id from table4 order by abc limit 1)order by likjux;";
+//        String sql = "select (select (select iselectd from tafrombselectle4) as t3 from tafromble3) as tfrom1, (select * from table2) as t1 from table1 WHERE id = (select id from table4 order by abc limit 1)order by likjux;";
+        String sql = "select a.*, sa1.nickname as createrName, sa2.nickname as modifierName from sys_dictionary a left join sys_account sa1 on sa1.id = a.creater left join sys_account sa2 on sa2.id = a.modifier where 1 = 1              and typeId = ?   ORDER BY  disOrder asc  ";
         System.out.println(buildTotalSql(sql));
-
         long end, start = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
+//            sql.replaceAll(" +"," ");
             buildTotalSql(sql);
         }
 
         end = System.currentTimeMillis();
         System.out.println(end - start);
 
-        start = System.currentTimeMillis();
-        for(int i =0; i< 100000; i++){
-            buildTotalSql2(sql);
-        }
-        end = System.currentTimeMillis();
-        System.out.println(end - start);
+//        start = System.currentTimeMillis();
+//        for (int i = 0; i < 100000; i++) {
+//            buildTotalSql2(sql);
+//        }
+//        end = System.currentTimeMillis();
+//        System.out.println(end - start);
     }
 
     public static String buildTotalSql2(String sql) {
