@@ -37,12 +37,15 @@ public class BuildKit {
      * @return count fixed
      */
     public static String buildTotalSql(String sql) {
+        sql = sql.trim();
+        StringBuilder sqlBuilder = new StringBuilder(sql);
+        //去除前空格
+
         //处理UNION、UNION ALL 的情况，需要求UNION部分的sql用（号包起来
         if (sql.startsWith("(")) {
             return newTotalSql(sql);
         }
 
-        StringBuilder sqlBuilder = new StringBuilder(sql);
         String lowerCaseSql = sql.toLowerCase();
         int selectIndex = 6, fromIndex = 4;
         while (true) {
@@ -77,7 +80,7 @@ public class BuildKit {
 
         int orderIndex = lowerCaseSql.lastIndexOf("order by ");
         if (orderIndex > lowerCaseSql.lastIndexOf(")")) {
-            sqlBuilder.delete(orderIndex, lowerCaseSql.length() - 1);
+            sqlBuilder.delete(orderIndex, lowerCaseSql.length());
         }
         sqlBuilder = sqlBuilder.replace(6, fromIndex, " COUNT(*) AS total ");
 
@@ -87,7 +90,7 @@ public class BuildKit {
     public static void main(String[] args) {
 
 //        String sql = "select (select (select iselectd from tafrombselectle4) as t3 from tafromble3) as tfrom1, (select * from table2) as t1 from table1 WHERE id = (select id from table4 order by abc limit 1)order by likjux;";
-        String sql = "select a.*, sa1.nickname as createrName, sa2.nickname as modifierName from sys_dictionary a left join sys_account sa1 on sa1.id = a.creater left join sys_account sa2 on sa2.id = a.modifier where 1 = 1              and typeId = ?   ORDER BY  disOrder asc  ";
+        String sql = "select a.*, GROUP_CONCAT(b.roleId) as roleIds, GROUP_CONCAT((select description from sys_role where id = b.roleId)) as roleNames, (select nickname from sys_account where id = a.creater) as createrName, (select nickname from sys_account where id = a.modifier) as modifierName from sys_account a left join sys_account_role b on a.id = b.accountId where 1 = 1             group by a.id  ORDER BY  modifyTime desc  ";
         System.out.println(buildTotalSql(sql));
         long end, start = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
