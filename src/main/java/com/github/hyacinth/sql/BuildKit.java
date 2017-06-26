@@ -39,7 +39,6 @@ public class BuildKit {
     public static String buildTotalSql(String sql) {
         sql = sql.trim();
         StringBuilder sqlBuilder = new StringBuilder(sql);
-        //去除前空格
 
         //处理UNION、UNION ALL 的情况，需要求UNION部分的sql用（号包起来
         if (sql.startsWith("(")) {
