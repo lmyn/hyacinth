@@ -80,7 +80,7 @@ public class Db {
      * @see #queryFirst(SqlKey, Object...)
      */
     public static <T> T queryFirst(SqlKey sqlKey) {
-        return DbPro.MAIN.queryFirst(sqlKey.toString());
+        return DbPro.MAIN.queryFirst(SqlCache.fixed.get(sqlKey.toString()));
     }
 
     /**
@@ -621,6 +621,17 @@ public class Db {
      */
     public static int[] batchUpdate(String tableName, List<Map<String, Object>> recordList, int batchSize) {
         return DbPro.MAIN.batchUpdate(tableName, recordList, batchSize);
+    }
+
+    /**
+     * 用于执行存储过程等
+     *
+     * @param executor
+     * @param <T>
+     * @return
+     */
+    public static <T> T execute(StatementExecutor executor){
+        return DbPro.MAIN.execute(executor);
     }
 
 }

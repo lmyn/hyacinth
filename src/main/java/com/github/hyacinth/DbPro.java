@@ -1047,4 +1047,32 @@ public class DbPro {
         return batchUpdate(tableName, config.dialect.getDefaultPrimaryKey(), recordList, batchSize);
     }
 
+    /**
+     * 用于执行存储过等其他个性化执行
+     *
+     * @param executor
+     * @param <T>
+     * @return
+     */
+    public <T> T execute(StatementExecutor executor){
+        Connection conn = null;
+        Boolean autoCommit = null;
+        try {
+            conn = config.getConnection();
+            autoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+            return executor.execute(conn);
+        } catch (Exception e) {
+            throw new HyacinthException(e);
+        } finally {
+            if (autoCommit != null)
+                try {
+                    conn.setAutoCommit(autoCommit);
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            config.close(conn);
+        }
+    }
+
 }

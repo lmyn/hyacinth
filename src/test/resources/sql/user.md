@@ -2,7 +2,7 @@
 ===
 > wfewafewafewafewaf
 
-    select * from user = fewafewa  ${where} #{id}  in @{？，？，？，？} 
+    select * from import_project
     
 selectUser22
 ---

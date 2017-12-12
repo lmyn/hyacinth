@@ -55,9 +55,7 @@ public class DefaultBuilder implements SqlBuilder {
         }
 
         StringWriter stringWriter = new StringWriter();
-        if (jetTemplate != null) {
-            jetTemplate.render(paras, stringWriter);
-        }
+        jetTemplate.render(paras, stringWriter);
         result = stringWriter.toString();
         try {
             stringWriter.close();

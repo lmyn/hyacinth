@@ -21,7 +21,7 @@
 	<!--<context:property-placeholder location="classpath*:conf/*.properties" />-->
     <!--<context:property-placeholder location="classpath:conf/upload.properties" />-->
 
-    <context:component-scan base-package="test.hyacinth.service" />
+    <context:component-scan base-package="test.hyacinth" />
 
 	<!-- 配置数据源 使用的是Druid数据源 -->
 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"

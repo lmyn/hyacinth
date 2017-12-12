@@ -163,14 +163,9 @@ public class HyacinthConfiguration {
             String protocol = url.getProtocol(),
                     className = null;
             if (protocol.equals("file")) {
-                //获取classpath路径
-                String rootClassPath = PathTools.getRootClassPath(),
-                        classFilePath = resource.getFile().getAbsolutePath();
-                if (!classFilePath.contains(rootClassPath)) {
-                    //处理测试路径
-                    rootClassPath = rootClassPath.replace("test-classes", "classes");
-                }
-                className = classFilePath.substring(0, classFilePath.length() - 6).replace(rootClassPath + File.separator, "").replace(File.separator, ".");
+                //获取class文件所在磁盘路径
+                String classFilePath = resource.getFile().getAbsolutePath();
+                className = classFilePath.substring(classFilePath.lastIndexOf("classes" + File.separator) + 8, classFilePath.length() - 6).replace(File.separator, ".");
             } else if (protocol.equals("jar")) {
                 String classUrlPath = url.getPath();
                 //从jar url中截图类名

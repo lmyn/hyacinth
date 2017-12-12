@@ -35,7 +35,7 @@ public class DefaultCompiler implements TemplateCompiler {
         //获取引擎对象
         JetEngine jetEngine = getJetEngine();
         //编译模板
-        JetTemplate jetTemplate = jetEngine.createTemplate(name, template);
+        JetTemplate jetTemplate = jetEngine.createTemplate(template);
         //将编译后的模板放入缓存
         SqlCache.jetbrickTemplate.put(name, jetTemplate);
 //        LOGGER.debug("Compiled sql sql:{} --> \n sql sql: {}", name, template);
